@@ -26,7 +26,6 @@ object evalURI {
 class evalURI {
 
   def eval(expr: URI_AST): URI_Return_Value = {
-    System.err.println("EVAL " + expr)
     expr match {
       case URI_URI(scheme, hier_part, query, fragment) ⇒
         ((((eval(scheme),
