@@ -1,4 +1,4 @@
-**Άρκτος**  A Parboiled2 Based Scala Parser for the RFC 3986 URI Generic Syntax
+**Arktos**  A Parboiled2 Based Scala Parser for the RFC 3986 URI Generic Syntax
 
 Introduction
 ============
