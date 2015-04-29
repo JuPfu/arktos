@@ -55,7 +55,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   // sub-delims = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
   val sub_delims = CharPredicate('!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=')
   // query_delims = CharPredicate('!', '$', ''', '(', ')', '*', '+', ',', ';')
-  val query_delims = CharPredicate('!', '$', ''', '(', ')', '*', '+', ',', ';')
+  val query_delims = CharPredicate('!', '$', '\'', '(', ')', '*', '+', ',', ';')
   // reserved      = gen-delims / sub-delims
   val reserved = gen_delims ++ sub_delims
 
