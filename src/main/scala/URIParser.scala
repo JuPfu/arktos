@@ -63,7 +63,8 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def URI = rule { scheme ~ ':' ~ hier_part ~ ('?' ~ query).? ~ ('#' ~ fragment).? ~> URI_URI }
 
   // hier-part     = "//" authority path-abempty / path-absolute / path-rootless / path-empty
-  def hier_part = rule { '/' ~ '/' ~ authority ~ path_absolute ~> URI_Hier_Part_Absolute | (path_rootless| path_abempty | path_empty) ~> URI_Hier_Part_Path }
+  def hier_part = rule { ('/' ~ '/' ~ authority ~ path_absolute) ~> URI_Hier_Part_Absolute |
+                         (path_rootless| path_abempty | path_empty) ~> URI_Hier_Part_Path }
 
   // URI-reference = URI / relative-ref
   def URI_reference = rule { (URI | relative_ref) ~> URI_Reference }
@@ -78,10 +79,10 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def relative_part = rule { ('/' ~ '/' ~ authority ~ path_absolute ~> URI_Relative_Part) | (path_noscheme | path_abempty | path_empty) ~> URI_Relative_Part_Path }
 
   // scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-  def scheme = rule { capture(Alpha ~ scheme_char.*) ~> URI_Scheme }
+  def scheme = rule { atomic(capture(Alpha ~ scheme_char.*)) ~> URI_Scheme }
 
   // authority     = [ userinfo "@" ] host [ ":" port ]
-  def authority = rule { (userinfo ~ '@').? ~ host ~ (':' ~ port).? ~> URI_Authority }
+  def authority = rule { (atomic(userinfo) ~ '@').? ~ host ~ (':' ~ port).? ~> URI_Authority }
 
   // userinfo      = user [ ":" password ]
   def userinfo = rule { user ~ (':' ~ password).? ~> URI_UserInfo }
@@ -102,7 +103,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def IP_literal = rule { '[' ~ (IPv6address  | IPvFuture) ~ ']' ~> URI_IP_Literal }
 
   // IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
-  def IPvFuture = rule { capture('v' ~ HexDigit ~ '.' ~ (unreserved | sub_delims | ':')) ~> URI_IPvFuture }
+  def IPvFuture = rule { atomic(capture('v' ~ HexDigit ~ '.' ~ (unreserved | sub_delims | ':'))) ~> URI_IPvFuture }
 
   // IPv6address   =                            6( h16 ":" ) ls32
   //               /                       "::" 5( h16 ":" ) ls32
@@ -114,7 +115,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   //               / [ *5( h16 ":" ) h16 ] "::"              h16
   //               / [ *6( h16 ":" ) h16 ] "::"
   def IPv6address = rule {
-    (capture(6.times(h16 ~ ':') ~ ls32) |
+    atomic((capture(6.times(h16 ~ ':') ~ ls32) |
       capture(':' ~ ':' ~ 5.times(h16 ~ ':') ~ ls32) |
       capture(h16.? ~ ':' ~ ':' ~ 4.times(h16 ~ ':') ~ ls32) |
       capture(((h16 ~ ':' ~ h16) | h16).? ~ ':' ~ ':' ~ 3.times(h16 ~ ':') ~ ls32) |
@@ -122,7 +123,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
       capture(((1 to 3 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':'~ h16 ~ ':' ~ ls32) |
       capture(((1 to 4 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ ls32) |
       capture(((1 to 5 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':'~ h16) |
-      capture(((1 to 6 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':')) ~> URI_IPv6Address
+      capture(((1 to 6 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':'))) ~> URI_IPv6Address
   }
 
   // h16           = 1*4HEXDIG
@@ -139,7 +140,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   //               / "1" 2DIGIT            ; 100-199
   //               / "2" %x30-34 DIGIT     ; 200-249
   //               / "25" %x30-35          ; 250-255
-  def dec_octet = rule { Digit | Digit19 ~ Digit | '1' ~ Digit ~ Digit | '2' ~ Digit4 ~ Digit | '2' ~ '5' ~ Digit5 }
+  def dec_octet = rule { '1' ~ Digit ~ Digit | '2' ~ Digit4 ~ Digit | '2' ~ '5' ~ Digit5 | Digit19 ~ Digit | Digit }
 
   // reg-name      = *( unreserved / pct-encoded / sub-delims )
   def reg_name = rule { atomic(capture((unreserved | pct_encoded | sub_delims).*)) ~> URI_Reg_Name }
@@ -194,8 +195,6 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def pct_encoded = rule { '%' ~ HexDigit ~ HexDigit }
 }
 
-import java.io.File
-
 object URIParser extends App {
 
   sealed trait URI_Return_Value
@@ -240,13 +239,13 @@ object URIParser extends App {
   case class URI_Fragment(fragment: String) extends URI_AST
   case class Error(msg: String) extends URI_AST
 
-  lazy val input: ParserInput = args(0) //io.Source.fromFile(args(0)).mkString
+  lazy val input: ParserInput = args(0)
+
   System.err.println("testing: " + args(0))
 
   URIParser(input)
 
-  def apply(input: ParserInput) /*: Either[Error, URI_AbsoluteIri]*/ = {
-    //import Parser.DeliveryScheme.Either
+  def apply(input: ParserInput) = {
 
     val parser = new URIParser(input)
 
@@ -255,12 +254,11 @@ object URIParser extends App {
 
     res match {
       case Success(x) ⇒
-        val m = eval_uri.eval(x) match { case URI_Map(x) => x }
+        val m = (eval_uri.eval(x): @unchecked) match { case URI_Map(x) => x }
         System.out.println("Success " + x); System.out.println("\nRESULT->" + m)
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + args(0) + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
       case Failure(e)             ⇒ System.err.println("Input '" + args(0) + "': Unexpected error during parsing run: " + e)
     }
-    //parser.absolute_iri.run().left.map(error ⇒ Error(parser.formatError(error)))
   }
 
 }
