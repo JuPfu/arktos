@@ -26,7 +26,6 @@ object evalURI {
 class evalURI {
 
   def eval(expr: URI_AST): URI_Return_Value = {
-    println("EVAL=" + expr)
     expr match {
       case URI_URI(scheme, hier_part, query, fragment) ⇒
         ((((eval(scheme),
@@ -119,10 +118,10 @@ class evalURI {
           case Some(p) ⇒ eval(p)
           case None ⇒ URI_String("")
         }): @unchecked) match {
-          case (URI_Map(m1), URI_Map(m2), URI_Map(m3)) ⇒ URI_Map(m1 ++ m2 ++ m3 ++ Map("authority" -> m1("userinfo").left.map(_ + "@" + m2("host").left.get + ":" + m3("port").left.get)))
-          case (URI_Map(m1), URI_Map(m2), URI_String(s)) ⇒ URI_Map(m1 ++ m2 ++ Map("authority" -> m1("userinfo").left.map(_ + "@" + m2("host").left.get)))
-          case (URI_String(s), URI_Map(m2), URI_Map(m3)) ⇒ URI_Map(m2 ++ m3 ++ Map("authority" -> m2("host").left.map(_ + ":" + m3("port").left.get)))
-          case (URI_String(s1), URI_Map(m2), URI_String(s3)) ⇒ URI_Map(m2 ++ Map("authority" -> m2("host")))
+          case (URI_Map(m1), URI_Map(m2), URI_Map(m3)) ⇒ URI_Map(m1 ++ m2 ++ m3 ++ Map("authority" -> m1("userinfo").left.map(_ + "@" + m2("hostname").left.get + ":" + m3("port").left.get)) ++ Map("host" -> m2("hostname").left.map(_ + ":" + m3("port").left.get)))
+          case (URI_Map(m1), URI_Map(m2), URI_String(s)) ⇒ URI_Map(m1 ++ m2 ++ Map("authority" -> m1("userinfo").left.map(_ + "@" + m2("hostname").left.get)) ++ Map("host" -> m2("hostname")))
+          case (URI_String(s), URI_Map(m2), URI_Map(m3)) ⇒ URI_Map(m2 ++ m3 ++ Map("authority" -> m2("hostname").left.map(_ + ":" + m3("port").left.get))++Map("authority" -> m2("host").left.map(_ + ":" + m3("port").left.get)))
+          case (URI_String(s1), URI_Map(m2), URI_String(s3)) ⇒ URI_Map(m2 ++ Map("authority" -> m2("hostname")) ++ Map("host" -> m2("hostname")))
         }
       case URI_UserInfo(user, password) ⇒
         ((eval(user), password match {
@@ -144,7 +143,7 @@ class evalURI {
       case URI_Path_Rootless(path_rootless) ⇒ URI_Map(Map("path" -> Left(path_rootless)))
       case URI_Path_Empty(path_empty) ⇒ URI_Map(Map("path" -> Left(path_empty)))
       case URI_Host(rule) ⇒ (eval(rule): @unchecked) match {
-        case URI_String(s) ⇒ URI_Map(Map("host" -> Left(s)))
+        case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s)))
       }
       case URI_IP_Literal(rule) ⇒ eval(rule)
       case URI_IPvFuture(ipvfuture) ⇒ URI_String(ipvfuture)
