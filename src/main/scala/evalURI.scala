@@ -88,22 +88,7 @@ class evalURI {
       case URI_Hier_Part_Absolute(authority, path) ⇒
         ((eval(authority),
           eval(path)): @unchecked) match {
-          case (URI_Map(m1), URI_Map(m2)) ⇒ //URI_Map(m1 ++ m2)
-            println("m1=" + m1)
-            /*
-            val user = (m1.getOrElse("user", Left("")))
-            val password = m1.getOrElse("password", Left(""))
-            val host = m1("host")
-            val port = m1.getOrElse("port",Left(""))
-            val authority = ((if(user != Left("")) user.left + ":" else Left("")) +
-              (if (password != Left("")) password else "") +
-              (if (user != Left("") || password != Left("")) Left("@") else "") +
-                            host +
-              (if (port != Left("")) port else Left("")))
-              */
-
-            //println("user="+user); println("password="+password); println("host="+host); println("port="+port)
-            URI_Map(m1 ++ m2 /*++ Map("authority" -> Left(authority))*/) // ++ Map("authority" -> Left(user) + ":" + Left(password) /*+ URI_String("@") + host + URI_String(":")*/ /*+ port*/))
+          case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(m1 ++ m2)
           case (URI_Map(m1), URI_String(s)) ⇒ URI_Map(m1)
           case (URI_String(s), URI_Map(m2)) ⇒ URI_Map(m2)
         }
