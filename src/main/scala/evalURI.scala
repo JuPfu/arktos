@@ -124,7 +124,8 @@ class evalURI {
           case (URI_Map(m1), URI_Map(m2), URI_String(s)) ⇒ URI_Map(m1 ++ m2 ++
             Map("authority" -> m1("userinfo").left.map(_ + "@" + m2("hostname").left.get)) ++
             Map("host" -> m2("hostname")))
-          case (URI_String(s), URI_Map(m2), URI_Map(m3)) ⇒ URI_Map(m2 ++ m3 ++ Map("authority" -> m2("hostname").left.map(_ + ":" + m3("port").left.get)) ++
+          case (URI_String(s), URI_Map(m2), URI_Map(m3)) ⇒ URI_Map(m2 ++ m3 ++
+            Map("authority" -> m2("hostname").left.map(_ + ":" + m3("port").left.get)) ++
             Map("host" -> m2("hostname").left.map(_ + ":" + m3("port").left.get)))
           case (URI_String(s1), URI_Map(m2), URI_String(s3)) ⇒ URI_Map(m2 ++ Map("authority" -> m2("hostname")) ++ Map("host" -> m2("hostname")))
         }
@@ -163,7 +164,7 @@ class evalURI {
       case URI_QueryVariable(queryVariable) ⇒ URI_String(queryVariable)
       case URI_QueryValue(queryValue)       ⇒ URI_String(queryValue)
       case URI_QueryToken(queryToken)       ⇒ URI_String(queryToken)
-      case URI_Fragment(fragment)           ⇒ URI_Map(Map("fragment" -> Left(fragment)))
+      case URI_Fragment(fragment)           ⇒ URI_Map(Map("fragment" -> Left(fragment)) ++ Map("hash" -> Left("#" + fragment)))
       case Error(e)                         ⇒ URI_String("Error" + e)
     }
   }

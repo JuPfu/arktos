@@ -69,7 +69,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   }
 
   // URI-reference = URI / relative-ref
-  def URI_reference = rule { (URI | relative_ref) ~> URI_Reference }
+  def URI_reference = rule { (URI | relative_ref) ~ EOI ~> URI_Reference }
 
   // absolute-URI  = scheme ":" hier-part [ "?" query ]
   def absolute_URI = rule { scheme ~ ':' ~ hier_part ~ ('?' ~ query).? ~> URI_AbsoluteURI }
