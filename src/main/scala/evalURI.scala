@@ -125,7 +125,7 @@ class evalURI {
             Map("authority" -> m1("userinfo").left.map(_ + "@" + m2("hostname").left.get)) ++
             Map("host" -> m2("hostname")))
           case (URI_String(s), URI_Map(m2), URI_Map(m3)) ⇒ URI_Map(m2 ++ m3 ++ Map("authority" -> m2("hostname").left.map(_ + ":" + m3("port").left.get)) ++
-            Map("authority" -> m2("host").left.map(_ + ":" + m3("port").left.get)))
+            Map("host" -> m2("hostname").left.map(_ + ":" + m3("port").left.get)))
           case (URI_String(s1), URI_Map(m2), URI_String(s3)) ⇒ URI_Map(m2 ++ Map("authority" -> m2("hostname")) ++ Map("host" -> m2("hostname")))
         }
       case URI_UserInfo(user, password) ⇒
