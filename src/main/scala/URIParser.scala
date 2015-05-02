@@ -255,7 +255,8 @@ object URIParser extends App {
     res match {
       case Success(x) ⇒
         val m = (eval_uri.eval(x): @unchecked) match { case URI_Map(x) => x }
-        System.out.println("Success " + x); System.out.println("\nRESULT->" + m)
+        System.out.println("Success " + x);
+        System.out.println("\nRESULT->" + m.mapValues { case Left(v) => v; case (Right(v)) => v })
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + args(0) + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
       case Failure(e)             ⇒ System.err.println("Input '" + args(0) + "': Unexpected error during parsing run: " + e)
     }
