@@ -63,8 +63,10 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def URI = rule { scheme ~ ':' ~ hier_part ~ ('?' ~ query).? ~ ('#' ~ fragment).? ~> URI_URI }
 
   // hier-part     = "//" authority path-abempty / path-absolute / path-rootless / path-empty
-  def hier_part = rule { ('/' ~ '/' ~ authority ~ path_absolute) ~> URI_Hier_Part_Absolute |
-                         (path_rootless| path_abempty | path_empty) ~> URI_Hier_Part_Path }
+  def hier_part = rule {
+    ('/' ~ '/' ~ authority ~ path_absolute) ~> URI_Hier_Part_Absolute |
+      (path_rootless | path_abempty | path_empty) ~> URI_Hier_Part_Path
+  }
 
   // URI-reference = URI / relative-ref
   def URI_reference = rule { (URI | relative_ref) ~> URI_Reference }
@@ -76,7 +78,10 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def relative_ref = rule { relative_part ~ ('?' ~ query).? ~ ('#' ~ fragment).? ~> URI_Relative_Ref }
 
   // relative-part = "//" authority path-abempty / path-absolute / path-noscheme / path-empty
-  def relative_part = rule { ('/' ~ '/' ~ authority ~ path_absolute ~> URI_Relative_Part) | (path_noscheme | path_abempty | path_empty) ~> URI_Relative_Part_Path }
+  def relative_part = rule {
+    ('/' ~ '/' ~ authority ~ path_absolute ~> URI_Relative_Part) |
+      (path_noscheme | path_abempty | path_empty) ~> URI_Relative_Part_Path
+  }
 
   // scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
   def scheme = rule { atomic(capture(Alpha ~ scheme_char.*)) ~> URI_Scheme }
@@ -88,19 +93,19 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def userinfo = rule { user ~ (':' ~ password).? ~> URI_UserInfo }
 
   // user          = *( unreserved / pct-encoded / sub-delims )
-  def user = rule { capture((unreserved | pct_encoded | sub_delims).*) ~> URI_User }
+  def user = rule { atomic(capture((unreserved | pct_encoded | sub_delims).*)) ~> URI_User }
 
   // password      = *( unreserved / pct-encoded / sub-delims / ":" )
-  def password = rule { capture((unreserved | pct_encoded | sub_delims | ':').*) ~> URI_Password }
+  def password = rule { atomic(capture((unreserved | pct_encoded | sub_delims | ':').*)) ~> URI_Password }
 
   // host          = IP-literal / IPv4address / reg-name
   def host = rule { (IP_literal | IPv4address | reg_name) ~> URI_Host }
 
   // port          = *DIGIT
-  def port = rule { capture(Digit.*) ~> URI_Port }
+  def port = rule { atomic(capture(Digit.*)) ~> URI_Port }
 
   // IP-literal    = "[" ( IPv6address / IPvFuture  ) "]"
-  def IP_literal = rule { '[' ~ (IPv6address  | IPvFuture) ~ ']' ~> URI_IP_Literal }
+  def IP_literal = rule { '[' ~ (IPv6address | IPvFuture) ~ ']' ~> URI_IP_Literal }
 
   // IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
   def IPvFuture = rule { atomic(capture('v' ~ HexDigit ~ '.' ~ (unreserved | sub_delims | ':'))) ~> URI_IPvFuture }
@@ -120,9 +125,9 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
       capture(h16.? ~ ':' ~ ':' ~ 4.times(h16 ~ ':') ~ ls32) |
       capture(((h16 ~ ':' ~ h16) | h16).? ~ ':' ~ ':' ~ 3.times(h16 ~ ':') ~ ls32) |
       capture(((1 to 2 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ 2.times(h16 ~ ':') ~ ls32) |
-      capture(((1 to 3 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':'~ h16 ~ ':' ~ ls32) |
+      capture(((1 to 3 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ h16 ~ ':' ~ ls32) |
       capture(((1 to 4 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ ls32) |
-      capture(((1 to 5 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':'~ h16) |
+      capture(((1 to 5 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ h16) |
       capture(((1 to 6 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':'))) ~> URI_IPv6Address
   }
 
@@ -153,16 +158,16 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def path = rule { (path_absolute | path_noscheme | path_rootless | path_abempty | path_empty) ~> URI_Path }
 
   // path-abempty  = *( "/" segment )
-  def path_abempty = rule { capture(('/' ~ segment).*) ~> URI_Path_AbEmpty }
+  def path_abempty = rule { atomic(capture(('/' ~ segment).*)) ~> URI_Path_AbEmpty }
 
   // path-absolute = "/" [ segment-nz *( "/" segment ) ]
-  def path_absolute = rule { capture('/' ~ (segment_nz ~ ('/' ~ segment).*).?) ~> URI_Path_Absolute }
+  def path_absolute = rule { atomic(capture('/' ~ (segment_nz ~ ('/' ~ segment).*).?)) ~> URI_Path_Absolute }
 
   // path-noscheme = segment-nz-nc *( "/" segment )
-  def path_noscheme = rule { capture(segment_nz_nc ~ ('/' ~ segment).*) ~> URI_Path_NoScheme }
+  def path_noscheme = rule { atomic(capture(segment_nz_nc ~ ('/' ~ segment).*)) ~> URI_Path_NoScheme }
 
   // path-rootless = segment-nz *( "/" segment )
-  def path_rootless = rule { capture(segment_nz ~ ('/' ~ segment).*) ~> URI_Path_Rootless }
+  def path_rootless = rule { atomic(capture(segment_nz ~ ('/' ~ segment).*)) ~> URI_Path_Rootless }
 
   // path-empty    = 0<pchar>
   def path_empty = rule { capture("") ~> URI_Path_Empty }
@@ -189,7 +194,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' }
 
   // fragment      = *( pchar / "/" / "?" )
-  def fragment = rule { capture((pchar | '/' | '?').*) ~> URI_Fragment }
+  def fragment = rule { atomic(capture((pchar | '/' | '?').*)) ~> URI_Fragment }
 
   // pct-encoded    = "%" HEXDIG HEXDIG
   def pct_encoded = rule { '%' ~ HexDigit ~ HexDigit }
@@ -254,9 +259,9 @@ object URIParser extends App {
 
     res match {
       case Success(x) ⇒
-        val m = (eval_uri.eval(x): @unchecked) match { case URI_Map(x) => x }
+        val m = (eval_uri.eval(x): @unchecked) match { case URI_Map(x) ⇒ x }
         System.out.println("Success " + x);
-        System.out.println("\nRESULT->" + m.mapValues { case Left(v) => v; case (Right(v)) => v })
+        System.out.println("RESULT->" + m.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v })
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + args(0) + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
       case Failure(e)             ⇒ System.err.println("Input '" + args(0) + "': Unexpected error during parsing run: " + e)
     }
