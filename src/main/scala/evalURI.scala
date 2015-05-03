@@ -24,7 +24,6 @@ object evalURI {
 }
 
 class evalURI {
-
   def eval(expr: URI_AST): URI_Return_Value = {
     expr match {
       case URI_URI(scheme, hier_part, query, fragment) ⇒
@@ -38,21 +37,10 @@ class evalURI {
             case Some(f) ⇒ eval(f)
             case None    ⇒ URI_String("")
           }): @unchecked) match {
-          case (URI_Map(m1), URI_Map(m2), URI_Map(m3), URI_Map(m4))          ⇒ URI_Map(m1 ++ m2 ++ m3 ++ m4)
-          case (URI_Map(m1), URI_Map(m2), URI_Map(m3), URI_String(s))        ⇒ URI_Map(m1 ++ m2 ++ m3)
-          case (URI_Map(m1), URI_Map(m2), URI_String(s), URI_Map(m4))        ⇒ URI_Map(m1 ++ m2 ++ m4)
-          case (URI_Map(m1), URI_String(s), URI_Map(m3), URI_Map(m4))        ⇒ URI_Map(m1 ++ m3 ++ m4)
-          case (URI_String(s), URI_Map(m2), URI_Map(m3), URI_Map(m4))        ⇒ URI_Map(m2 ++ m3 ++ m4)
-          case (URI_Map(m1), URI_Map(m2), URI_String(s3), URI_String(s4))    ⇒ URI_Map(m1 ++ m2)
-          case (URI_Map(m1), URI_String(s2), URI_Map(m3), URI_String(s4))    ⇒ URI_Map(m1 ++ m3)
-          case (URI_String(s1), URI_Map(m2), URI_Map(m3), URI_String(s4))    ⇒ URI_Map(m2 ++ m3)
-          case (URI_String(s1), URI_Map(m2), URI_String(s3), URI_Map(m4))    ⇒ URI_Map(m2 ++ m4)
-          case (URI_Map(m1), URI_String(s2), URI_String(s3), URI_Map(m4))    ⇒ URI_Map(m1 ++ m4)
-          case (URI_String(s1), URI_String(s2), URI_Map(m3), URI_Map(m4))    ⇒ URI_Map(m3 ++ m4)
-          case (URI_Map(m1), URI_String(s2), URI_String(s3), URI_String(s4)) ⇒ URI_Map(m1)
-          case (URI_String(s1), URI_Map(m2), URI_String(s3), URI_String(s4)) ⇒ URI_Map(m2)
-          case (URI_String(s1), URI_String(s2), URI_Map(m3), URI_String(s4)) ⇒ URI_Map(m3)
-          case (URI_String(s1), URI_String(s2), URI_String(s3), URI_Map(m4)) ⇒ URI_Map(m4)
+          case (URI_Map(m1), URI_Map(m2), URI_Map(m3), URI_Map(m4))       ⇒ URI_Map(m1 ++ m2 ++ m3 ++ m4)
+          case (URI_Map(m1), URI_Map(m2), URI_Map(m3), URI_String(s))     ⇒ URI_Map(m1 ++ m2 ++ m3)
+          case (URI_Map(m1), URI_Map(m2), URI_String(s), URI_Map(m4))     ⇒ URI_Map(m1 ++ m2 ++ m4)
+          case (URI_Map(m1), URI_Map(m2), URI_String(s3), URI_String(s4)) ⇒ URI_Map(m1 ++ m2)
         }): @unchecked) match {
           case URI_Map(m) ⇒ URI_Map(m ++ Map("uri_type" -> Left("absolute")))
         }
@@ -69,27 +57,20 @@ class evalURI {
           case (URI_Map(m1), URI_Map(m2), URI_Map(m3))       ⇒ URI_Map(m1 ++ m2 ++ m3)
           case (URI_Map(m1), URI_Map(m2), URI_String(s))     ⇒ URI_Map(m1 ++ m2)
           case (URI_Map(m1), URI_String(s), URI_Map(m3))     ⇒ URI_Map(m1 ++ m3)
-          case (URI_String(s), URI_Map(m2), URI_Map(m3))     ⇒ URI_Map(m2 ++ m3)
           case (URI_Map(m1), URI_String(s2), URI_String(s3)) ⇒ URI_Map(m1)
-          case (URI_String(s1), URI_Map(m2), URI_String(s3)) ⇒ URI_Map(m2)
-          case (URI_String(s1), URI_String(s2), URI_Map(m3)) ⇒ URI_Map(m3)
         }): @unchecked) match {
           case URI_Map(m) ⇒ URI_Map(m ++ Map("uri_type" -> Left("relative")))
         }
       case URI_Relative_Part(authority, path) ⇒
         ((eval(authority), eval(path)): @unchecked) match {
-          case (URI_Map(m1), URI_Map(m2))   ⇒ URI_Map(m1 ++ m2)
-          case (URI_Map(m1), URI_String(s)) ⇒ URI_Map(m1)
-          case (URI_String(s), URI_Map(m2)) ⇒ URI_Map(m2)
+          case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(m1 ++ m2)
         }
       case URI_Relative_Part_Path(path) ⇒ eval(path)
       case URI_Scheme(s)                ⇒ URI_Map(Map("scheme" -> Left(s)))
       case URI_Hier_Part_Absolute(authority, path) ⇒
         ((eval(authority),
           eval(path)): @unchecked) match {
-          case (URI_Map(m1), URI_Map(m2))   ⇒ URI_Map(m1 ++ m2)
-          case (URI_Map(m1), URI_String(s)) ⇒ URI_Map(m1)
-          case (URI_String(s), URI_Map(m2)) ⇒ URI_Map(m2)
+          case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(m1 ++ m2)
         }
       case URI_Hier_Part_Path(path) ⇒ eval(path)
       case URI_Reference(rule)      ⇒ eval(rule)
@@ -102,11 +83,7 @@ class evalURI {
           }): @unchecked) match {
           case (URI_Map(m1), URI_Map(m2), URI_Map(m3))       ⇒ URI_Map(m1 ++ m2 ++ m3)
           case (URI_Map(m1), URI_Map(m2), URI_String(s))     ⇒ URI_Map(m1 ++ m2)
-          case (URI_Map(m1), URI_String(s), URI_Map(m3))     ⇒ URI_Map(m1 ++ m3)
-          case (URI_String(s), URI_Map(m2), URI_Map(m3))     ⇒ URI_Map(m2 ++ m3)
           case (URI_Map(m1), URI_String(s2), URI_String(s3)) ⇒ URI_Map(m1)
-          case (URI_String(s1), URI_Map(m2), URI_String(s3)) ⇒ URI_Map(m2)
-          case (URI_String(s1), URI_String(s2), URI_Map(m3)) ⇒ URI_Map(m3)
         }): @unchecked) match {
           case URI_Map(m) ⇒ URI_Map(m ++ Map("uri_type" -> Left("absolute")))
         }
@@ -136,7 +113,7 @@ class evalURI {
         }): @unchecked) match {
           case (URI_Map(m1), URI_Map(m2))   ⇒ URI_Map(m1 ++ m2 ++ Map("userinfo" -> m1("user").left.map(_ + ":" + m2("password").left.get)))
           case (URI_Map(m1), URI_String(s)) ⇒ URI_Map(m1 ++ Map("userinfo" -> m1("user")))
-          case (URI_String(s), URI_Map(m2)) ⇒ URI_Map(m2 ++ Map("userinfo" -> m2("password")))
+          //case (URI_String(s), URI_Map(m2)) ⇒ URI_Map(m2 ++ Map("userinfo" -> m2("password")))
         }
       case URI_User(user)                   ⇒ URI_Map(Map("user" -> Left(user)))
       case URI_Password(password)           ⇒ URI_Map(Map("password" -> Left(password)))

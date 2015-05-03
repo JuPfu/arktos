@@ -64,8 +64,8 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
   // hier-part     = "//" authority path-abempty / path-absolute / path-rootless / path-empty
   def hier_part = rule {
-    ('/' ~ '/' ~ authority ~ path_absolute) ~> URI_Hier_Part_Absolute |
-      (path_rootless | path_abempty | path_empty) ~> URI_Hier_Part_Path
+    ('/' ~ '/' ~ authority ~ path_abempty) ~> URI_Hier_Part_Absolute |
+      (path_absolute | path_rootless | path_empty) ~> URI_Hier_Part_Path
   }
 
   // URI-reference = URI / relative-ref
@@ -79,15 +79,15 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
   // relative-part = "//" authority path-abempty / path-absolute / path-noscheme / path-empty
   def relative_part = rule {
-    ('/' ~ '/' ~ authority ~ path_absolute ~> URI_Relative_Part) |
-      (path_noscheme | path_abempty | path_empty) ~> URI_Relative_Part_Path
+    ('/' ~ '/' ~ authority ~ path_abempty) ~> URI_Relative_Part |
+      (path_absolute | path_noscheme | path_empty) ~> URI_Relative_Part_Path
   }
 
   // scheme        = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
   def scheme = rule { atomic(capture(Alpha ~ scheme_char.*)) ~> URI_Scheme }
 
   // authority     = [ userinfo "@" ] host [ ":" port ]
-  def authority = rule { (atomic(userinfo) ~ '@').? ~ host ~ (':' ~ port).? ~> URI_Authority }
+  def authority = rule { (userinfo ~ '@').? ~ host ~ (':' ~ port).? ~> URI_Authority }
 
   // userinfo      = user [ ":" password ]
   def userinfo = rule { user ~ (':' ~ password).? ~> URI_UserInfo }
@@ -149,6 +149,19 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
   // reg-name      = *( unreserved / pct-encoded / sub-delims )
   def reg_name = rule { atomic(capture((unreserved | pct_encoded | sub_delims).*)) ~> URI_Reg_Name }
+
+  // A registered name intended for lookup in the DNS uses the syntax
+  // defined in Section 3.5 of [RFC1034] and Section 2.1 of [RFC1123].
+  //  Such a name consists of a sequence of domain labels separated by ".",
+  // each domain label starting and ending with an alphanumeric character
+  // and possibly also containing "-" characters.  The rightmost domain
+  // label of a fully qualified domain name in DNS may be followed by a
+  // single "." and should be if it is necessary to distinguish between
+  //  the complete domain name and some local domain.
+
+  // def reg_name = rule { subdomain ~ domain }
+  // def subdomain = rule { (reg_segment.? ~ '.'.+).? }
+  // def domain = rule { (reg_segment.? ~ '.').* }
 
   // path          = path-abempty   ; begins with "/" or is empty
   //               / path-absolute  ; begins with "/" but not "//"
