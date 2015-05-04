@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Juergen Pfundt
+ * Copyright (C) 2015 Juergen Pfundt
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,12 +152,12 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
   // A registered name intended for lookup in the DNS uses the syntax
   // defined in Section 3.5 of [RFC1034] and Section 2.1 of [RFC1123].
-  //  Such a name consists of a sequence of domain labels separated by ".",
+  // Such a name consists of a sequence of domain labels separated by ".",
   // each domain label starting and ending with an alphanumeric character
   // and possibly also containing "-" characters.  The rightmost domain
   // label of a fully qualified domain name in DNS may be followed by a
   // single "." and should be if it is necessary to distinguish between
-  //  the complete domain name and some local domain.
+  // the complete domain name and some local domain.
 
   // def reg_name = rule { subdomain ~ domain }
   // def subdomain = rule { (reg_segment.? ~ '.'.+).? }

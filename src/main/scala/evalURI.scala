@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2014 Juergen Pfundt
+* Copyright (C) 2015 Juergen Pfundt
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -113,7 +113,6 @@ class evalURI {
         }): @unchecked) match {
           case (URI_Map(m1), URI_Map(m2))   ⇒ URI_Map(m1 ++ m2 ++ Map("userinfo" -> m1("user").left.map(_ + ":" + m2("password").left.get)))
           case (URI_Map(m1), URI_String(s)) ⇒ URI_Map(m1 ++ Map("userinfo" -> m1("user")))
-          //case (URI_String(s), URI_Map(m2)) ⇒ URI_Map(m2 ++ Map("userinfo" -> m2("password")))
         }
       case URI_User(user)                   ⇒ URI_Map(Map("user" -> Left(user)))
       case URI_Password(password)           ⇒ URI_Map(Map("password" -> Left(password)))
