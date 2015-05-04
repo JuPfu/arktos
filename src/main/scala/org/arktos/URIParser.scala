@@ -31,17 +31,16 @@
                                                                January 2005
 */
 
-package org.uri
+package org.arktos
 
-import org.parboiled2._
-import org.parboiled2.{ ErrorFormatter, ParseError, ParserInput }
+import org.parboiled2.{ ErrorFormatter, ParseError, ParserInput, _ }
+
 import scala.util.{ Failure, Success }
 
 class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
-  import URIParser._
-
   import CharPredicate.{ Alpha, AlphaNum, Digit, Digit19, HexDigit }
+  import URIParser._
 
   // dec_octet helpers
   val Digit4 = CharPredicate('0' to '4')
@@ -273,7 +272,6 @@ object URIParser extends App {
     res match {
       case Success(x) ⇒
         val m = (eval_uri.eval(x): @unchecked) match { case URI_Map(x) ⇒ x }
-        System.out.println("Success " + x);
         System.out.println("RESULT->" + m.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v })
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + args(0) + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
       case Failure(e)             ⇒ System.err.println("Input '" + args(0) + "': Unexpected error during parsing run: " + e)

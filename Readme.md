@@ -31,4 +31,9 @@ Running *Arktos* from the command line
 
 Conversion of URI is done with the command shown here: 
 
-    scala -cp ./target/scala-2.11/arktos-assembly-0.1.0.jar org.arktos.Main 
+    scala -cp ./target/scala-2.11/arktos-assembly-0.1-SNAPSHOT.jar org.arktos.URIParser "http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content"
+    
+The output generated should be
+
+    testing: http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content
+    RESULT->Map(path -> /rfc/rfc2396.txt, hostname -> www.ietf.org, uri_type -> absolute, userinfo -> jp:secret, host -> www.ietf.org, params -> List((p,1), (p,URI)), fragment -> content, hash -> #content, scheme -> http, user -> jp, authority -> jp:secret@www.ietf.org, password -> secret)
