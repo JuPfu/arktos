@@ -41,9 +41,18 @@ Conversion of URI is done with the command shown here:
 
 Currently the keys listed below are supported. You have to check for the presence of a key in the map before asking to return the value. 
 
-| key      | value                                          |
--------------------------------------------------------------
-| scheme   | the detected scheme                            |
-| user     | the user part of the userinfo subcomponent     |
+| key | value |
+------|--------
+| scheme | the detected scheme |
+| user | the user part of the userinfo subcomponent |
 | password | the password part of the userinfo subcomponent |
 | userinfo | the complete userinfo subcomponent consisting of 'user'-part and the 'password'-part separated by a colon |
+| hostname | the name of the host |
+| port | the port number |
+| host | host and port separated by a colon |
+| authority | userinfo and host separated by a @ |
+| path | the complete path segment |
+| params | the list of query parameters |
+| fragment | the fragment identifier component |
+| hash | the fragment with preceding '#' |
+| uri_type | 'absolute' or 'relative' |
