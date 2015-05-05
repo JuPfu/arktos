@@ -15,7 +15,7 @@ Create a *Arktos* JAR with all dependencies
 --------------------------------------------
 
 The *sbt-assembly* plugin located at https://github.com/sbt/sbt-assembly is used to create a *Arktos* JAR containing all dependencies.
-Move into the *Arktos** directory.
+Move into the *Arktos* directory.
 From the command line type 
 
     sbt assembly
@@ -24,7 +24,7 @@ This should generate an archive
 
     target/scala-2.11/arktos-assembly-x.x.x.jar
 
-where x.x.x denotes the version information, e.g. chelona-assembly-0.9.0.jar.
+where x.x.x denotes the version information, e.g. arktos-assembly-0.1.0.jar.
 
 Running *Arktos* from the command line
 ----------------------------------------
@@ -33,7 +33,17 @@ Conversion of URI is done with the command shown here:
 
     scala -cp ./target/scala-2.11/arktos-assembly-0.1-SNAPSHOT.jar org.arktos.URIParser "http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content"
     
-The output generated should be
+
+*Arktos* delivers a map with which contains the parsed segments of the URI.
 
     testing: http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content
     RESULT->Map(path -> /rfc/rfc2396.txt, hostname -> www.ietf.org, uri_type -> absolute, userinfo -> jp:secret, host -> www.ietf.org, params -> List((p,1), (p,URI)), fragment -> content, hash -> #content, scheme -> http, user -> jp, authority -> jp:secret@www.ietf.org, password -> secret)
+
+Currently the keys listed below are supported. You have to check for the presence of a key in the map before asking to return the value. 
+
+| key      | value                                          |
+-------------------------------------------------------------
+| scheme   | the detected scheme                            |
+| user     | the user part of the userinfo subcomponent     |
+| password | the password part of the userinfo subcomponent |
+| userinfo | the complete userinfo subcomponent consisting of 'user'-part and the 'password'-part separated by a colon |
