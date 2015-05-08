@@ -39,21 +39,22 @@ Conversion of URI is done with the command shown here:
     testing: http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content
     RESULT->Map(path -> /rfc/rfc2396.txt, hostname -> www.ietf.org, uri_type -> absolute, userinfo -> jp:secret, host -> www.ietf.org, params -> List((p,1), (p,URI)), fragment -> content, hash -> #content, scheme -> http, user -> jp, authority -> jp:secret@www.ietf.org, password -> secret)
 
-Currently the keys listed below are supported. You have to check for the presence of a key in the map before asking to return the value. 
+Currently the keys listed below are supported. The URL *http://member:secret@www.ietf.org:123/rfc/rfc2396.txt?p=1&p=URI#content* is used as an example to show
+the parsed components in the example column.
 
-| key | value |
-------|--------
-| scheme | the detected scheme |
-| user | the user part of the userinfo subcomponent |
-| password | the password part of the userinfo subcomponent |
-| userinfo | the complete userinfo subcomponent consisting of 'user'-part and 'password'-part separated by a colon |
-| hostname | the name of the host |
-| port | the port number |
-| host | host and port separated by a colon |
-| authority | userinfo and host separated by a '@' |
-| path | the complete path segment |
-| query | the query string |
-| params | the list of query parameters |
-| fragment | the fragment identifier component |
-| hash | the fragment with preceding '#' |
-| uri_type | 'absolute' or 'relative' URI |
+| key | value | example |
+------|-------|----------
+| scheme | the detected scheme | *http* |
+| user | the user part of the userinfo subcomponent | *member* |
+| password | the password part of the userinfo subcomponent | *secret* |
+| userinfo | the complete userinfo subcomponent consisting of 'user'-part and 'password'-part separated by a colon | *member:secret* |
+| hostname | the name of the host | *www.ietf.org* |
+| port | the port number | *123* |
+| host | host and port separated by a colon | *www.ietf.org:123* |
+| authority | userinfo and host separated by a '@' | *member:secret@www.ietf.org:123* |
+| path | the complete path segment | */rfc/rfc2396.txt* |
+| query | the query string | *p=1&p=URI* |
+| params | the list of query parameters | *List((p,1), (p,URI))* |
+| fragment | the fragment identifier component | *content* |
+| hash | the fragment with preceding '#' | *#content* |
+| uri_type | 'absolute' or 'relative' URI | *absolute* or *relative* |

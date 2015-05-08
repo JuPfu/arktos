@@ -175,7 +175,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   // path-absolute = "/" [ segment-nz *( "/" segment ) ]
   def path_absolute = rule {
     (atomic('/' ~ (capture(segment_nz) ~ ('/' ~ capture(segment)).*)) ~> ((s_nz: String, s: Seq[String]) ⇒ s_nz +: s) ~> URI_Path_Absolute) |
-      '/' ~ push("" :: Nil) ~> URI_Path_Absolute
+      atomic('/' ~ push("" :: Nil)) ~> URI_Path_Absolute
   }
 
   // path-noscheme = segment-nz-nc *( "/" segment )
