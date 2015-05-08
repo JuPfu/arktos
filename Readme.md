@@ -39,8 +39,11 @@ Conversion of URI is done with the command shown here:
     testing: http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content
     RESULT->Map(path -> /rfc/rfc2396.txt, hostname -> www.ietf.org, uri_type -> absolute, userinfo -> jp:secret, host -> www.ietf.org, params -> List((p,1), (p,URI)), fragment -> content, hash -> #content, scheme -> http, user -> jp, authority -> jp:secret@www.ietf.org, password -> secret)
 
-Currently the keys listed below are supported. The URL *http://member:secret@www.ietf.org:123/rfc/rfc2396.txt?p=1&p=URI#content* is used as an example to show
-the parsed components in the example column.
+Currently the keys listed below are supported. The URL 
+
+    http://member:secret@www.ietf.org:123/rfc/rfc2396.txt?p=1&p=URI#content
+
+is used as an example to show the parsed components in the example column.
 
 | key | value | example |
 ------|-------|----------
