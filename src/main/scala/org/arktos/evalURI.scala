@@ -119,10 +119,10 @@ class evalURI {
       case URI_Reg_Name(name)               ⇒ URI_String(name)
       case URI_Port(port)                   ⇒ URI_Map(Map("port" -> Left(port)))
       case URI_Path(path)                   ⇒ eval(path)
-      case URI_Path_AbEmpty(path)           ⇒ URI_Map(Map("path" -> Left(path)))
-      case URI_Path_Absolute(path_absolute) ⇒ URI_Map(Map("path" -> Left(path_absolute)))
-      case URI_Path_NoScheme(path_noscheme) ⇒ URI_Map(Map("path" -> Left(path_noscheme)))
-      case URI_Path_Rootless(path_rootless) ⇒ URI_Map(Map("path" -> Left(path_rootless)))
+      case URI_Path_AbEmpty(path_abempty)   ⇒ URI_Map(Map("path" -> Left(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y))))
+      case URI_Path_Absolute(path_absolute) ⇒ URI_Map(Map("path" -> Left(path_absolute.foldLeft("")((x, y) ⇒ x + "/" + y))))
+      case URI_Path_NoScheme(path_noscheme) ⇒ URI_Map(Map("path" -> Left(path_noscheme.mkString("/"))))
+      case URI_Path_Rootless(path_rootless) ⇒ URI_Map(Map("path" -> Left(path_rootless.mkString("/"))))
       case URI_Path_Empty(path_empty)       ⇒ URI_Map(Map("path" -> Left(path_empty)))
       case URI_Host(rule) ⇒ (eval(rule): @unchecked) match {
         case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s)))
@@ -131,8 +131,9 @@ class evalURI {
       case URI_IPvFuture(ipvfuture) ⇒ URI_String(ipvfuture)
       case URI_IPv6Address(address) ⇒ URI_String(address)
       case URI_IPv4Address(address) ⇒ URI_String(address)
-      //case URI_Query(query)                 ⇒ URI_Map(Map("query" -> query))
-      case URI_Query(rule)          ⇒ URI_Map(Map("params" -> traverseParameterList(rule, Nil)))
+      case URI_Query(rule) ⇒
+        val params = traverseParameterList(rule, Nil)
+        URI_Map(Map("params" -> Right(params)) ++ Map("query" -> Left(params.map((x) ⇒ x._1 + "=" + x._2).mkString("&"))))
       case URI_QueryParameter(queryVariable, queryValue) ⇒
         ((eval(queryVariable), eval(queryValue)): @unchecked) match {
           case (URI_String(variable), URI_String(value)) ⇒ URI_Tuple((variable, value))
@@ -146,8 +147,8 @@ class evalURI {
   }
 
   @tailrec
-  private def traverseParameterList(l: Seq[URI_AST], params: List[(String, String)]): Either[String, List[(String, String)]] = l match {
-    case Nil ⇒ Right(params)
+  private def traverseParameterList(l: Seq[URI_AST], params: List[(String, String)]): List[(String, String)] = l match {
+    case Nil ⇒ params
     case x +: xs ⇒ (eval(x): @unchecked) match {
       case URI_Tuple((k, v)) ⇒ traverseParameterList(xs, params ::: (k, v) :: Nil)
       case URI_String(t)     ⇒ traverseParameterList(xs, params ::: (t, "") :: Nil)

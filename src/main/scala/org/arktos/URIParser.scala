@@ -170,16 +170,19 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def path = rule { (path_absolute | path_noscheme | path_rootless | path_abempty | path_empty) ~> URI_Path }
 
   // path-abempty  = *( "/" segment )
-  def path_abempty = rule { atomic(capture(('/' ~ segment).*)) ~> URI_Path_AbEmpty }
+  def path_abempty = rule { atomic(('/' ~ capture(segment)).*) ~> URI_Path_AbEmpty }
 
   // path-absolute = "/" [ segment-nz *( "/" segment ) ]
-  def path_absolute = rule { atomic(capture('/' ~ (segment_nz ~ ('/' ~ segment).*).?)) ~> URI_Path_Absolute }
+  def path_absolute = rule {
+    (atomic('/' ~ (capture(segment_nz) ~ ('/' ~ capture(segment)).*)) ~> ((s_nz: String, s: Seq[String]) ⇒ s_nz +: s) ~> URI_Path_Absolute) |
+      '/' ~ push("" :: Nil) ~> URI_Path_Absolute
+  }
 
   // path-noscheme = segment-nz-nc *( "/" segment )
-  def path_noscheme = rule { atomic(capture(segment_nz_nc ~ ('/' ~ segment).*)) ~> URI_Path_NoScheme }
+  def path_noscheme = rule { atomic(capture(segment_nz_nc) ~ ('/' ~ capture(segment)).*) ~> ((s_nz_nc: String, s: Seq[String]) ⇒ s_nz_nc +: s) ~> URI_Path_NoScheme }
 
   // path-rootless = segment-nz *( "/" segment )
-  def path_rootless = rule { atomic(capture(segment_nz ~ ('/' ~ segment).*)) ~> URI_Path_Rootless }
+  def path_rootless = rule { atomic(capture(segment_nz) ~ ('/' ~ capture(segment)).*) ~> ((s_nz: String, s: Seq[String]) ⇒ s_nz +: s) ~> URI_Path_Rootless }
 
   // path-empty    = 0<pchar>
   def path_empty = rule { capture("") ~> URI_Path_Empty }
@@ -242,12 +245,11 @@ object URIParser extends App {
   case class URI_IPv4Address(ipv4address: String) extends URI_AST
   case class URI_Reg_Name(reg_name: String) extends URI_AST
   case class URI_Path(rule: URI_AST) extends URI_AST
-  case class URI_Path_AbEmpty(path_abempty: String) extends URI_AST
-  case class URI_Path_Absolute(path_absolute: String) extends URI_AST
-  case class URI_Path_NoScheme(path_noscheme: String) extends URI_AST
-  case class URI_Path_Rootless(path_rootless: String) extends URI_AST
+  case class URI_Path_AbEmpty(path_abempty: Seq[String]) extends URI_AST
+  case class URI_Path_Absolute(path_absolute: Seq[String]) extends URI_AST
+  case class URI_Path_NoScheme(path_noscheme: Seq[String]) extends URI_AST
+  case class URI_Path_Rootless(path_rootless: Seq[String]) extends URI_AST
   case class URI_Path_Empty(empty: String) extends URI_AST
-  //case class URI_Query(query: String) extends URI_AST
   case class URI_Query(query: Seq[URI_AST]) extends URI_AST
   case class URI_QueryParameter(queryvariable: URI_QueryVariable, queryvalue: URI_QueryValue) extends URI_AST
   case class URI_QueryVariable(queryvariable: String) extends URI_AST
