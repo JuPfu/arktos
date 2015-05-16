@@ -1,13 +1,11 @@
 import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 import scalariform.formatter.preferences._
 
-scalaVersion := "2.11.6"
-
 val commonSettings = Seq(
   version := "0.1.0",
   scalaVersion := "2.11.6",
   name := "URI",
-  organization := "org.uri",
+  organization := "org.arktos",
   homepage := Some(new URL("http://arktos.org")),
   description := "URI Parser",
   startYear := Some(2014),
@@ -39,7 +37,8 @@ test in assembly := {}
 	
 /////////////////////// DEPENDENCIES /////////////////////////
 
-val parboiled2       = "org.parboiled"   %% "parboiled"         % "2.1.0"
+val parboiled2       = "org.parboiled"   %% "parboiled"        % "2.1.0"
+val scopt            = "com.github.scopt" %% "scopt" % "3.3.0"
 val scalaTest        = "org.scalatest"   % "scalatest_2.11"    % "2.2.1" % "test"
 
 /////////////////////// PROJECTS /////////////////////////
@@ -58,8 +57,9 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(DoubleIndentClassDeclaration, true)
   .setPreference(PreserveDanglingCloseParenthesis, true)
 
-libraryDependencies ++= Seq(parboiled2, scalaTest)
+libraryDependencies ++= Seq(parboiled2, scopt, scalaTest)
 
 lazy val uri = project
-   .settings(formattingSettings: _*)
-   .settings(libraryDependencies ++= Seq(parboiled2,scalaTest))
+  .settings(formattingSettings: _*)
+  .settings(commonSettings: _*)
+  .settings(libraryDependencies ++= Seq(parboiled2, scopt, scalaTest))

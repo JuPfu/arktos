@@ -215,7 +215,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def pct_encoded = rule { '%' ~ HexDigit ~ HexDigit }
 }
 
-object URIParser extends App {
+object URIParser {
 
   sealed trait URI_Return_Value
   case class URI_String(s: String) extends URI_Return_Value
@@ -258,26 +258,7 @@ object URIParser extends App {
   case class URI_Fragment(fragment: String) extends URI_AST
   case class Error(msg: String) extends URI_AST
 
-  lazy val input: ParserInput = args(0)
-
-  System.err.println("testing: " + args(0))
-
-  URIParser(input)
-
   def apply(input: ParserInput) = {
-
-    val parser = new URIParser(input)
-
-    val res = parser.URI_reference.run()
-    val eval_uri = new evalURI
-
-    res match {
-      case Success(x) ⇒
-        val m = (eval_uri.eval(x): @unchecked) match { case URI_Map(x) ⇒ x }
-        System.out.println("RESULT->" + m.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v })
-      case Failure(e: ParseError) ⇒ System.err.println("Input '" + args(0) + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
-      case Failure(e)             ⇒ System.err.println("Input '" + args(0) + "': Unexpected error during parsing run: " + e)
-    }
+    new URIParser(input)
   }
-
 }
