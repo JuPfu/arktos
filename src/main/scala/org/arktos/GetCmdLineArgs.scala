@@ -32,6 +32,6 @@ object GetCmdLineArgs {
     opt[Unit]("version") action { (_, c) ⇒ c.copy(version = true) } text "Arktos version information"
     opt[Unit]('v', "validate") action { (_, c) ⇒ c.copy(validate = true) } text "validate input"
     opt[Unit]('t', "trace") action { (_, c) ⇒ c.copy(trace = true) } text "display error trace"
-    arg[String]("<URI>") required() action { (x, c) => c.copy(input_uri = x) } text "uri"
+    arg[String]("<URI>") required () action { (x, c) ⇒ c.copy(input_uri = x) } text "uri"
   }
 }

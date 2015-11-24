@@ -16,7 +16,6 @@
 
 package org.arktos
 
-
 import org.parboiled2.{ ErrorFormatter, ParseError, ParserInput }
 
 import org.arktos.URIParser.URI_Map
@@ -43,20 +42,20 @@ object Main extends App {
 
   if (verbose) {
     System.err.println((if (!validate) "Analyse: " else "Validate: ") + input_uri)
-    System.err.flush()
   }
 
   val ms: Double = System.currentTimeMillis
 
   lazy val input: ParserInput = input_uri
 
-  val parser = new URIParser(input)
-  val res = parser.URI_reference.run()
+  val parser = new URIParser(input_uri)
 
-  res match {
+  parser.URI_reference.run() match {
     case Success(x) ⇒
       val m = ((new evalURI).eval(x): @unchecked) match { case URI_Map(x) ⇒ x }
       System.out.println("RESULT->" + m.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v })
+      val me: Double = System.currentTimeMillis - ms
+      System.err.println("Used time " + (me / 1000.0))
     case Failure(e: ParseError) ⇒ System.err.println("Input '" + args(0) + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
     case Failure(e)             ⇒ System.err.println("Input '" + args(0) + "': Unexpected error during parsing run: " + e)
   }

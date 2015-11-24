@@ -27,6 +27,28 @@ object evalURI {
 }
 
 class evalURI {
+  val protocols = Set("aaa", "aaas", "about", "acap", "acct", "acr", "adiumxtra", "afp", "afs", "aim", "appdata", "apt",
+    "attachment", "aw", "barion", "beshare", "bitcoin", "blob", "bolo", "callto", "cap", "chrome", "chrome-extension",
+    "cid", "coap", "coaps", "com-eventbrite-attendee", "content", "crid", "cvs", "data", "dav", "dict", "dlna-playcontainer",
+    "dlna-playsingle", "dns", "dntp", "dtn", "dvb", "ed2k", "example", "facetime", "fax", "feed", "feedready", "file",
+    "filesystem", "finger", "fish", "ftp", "geo", "gg", "git", "gizmoproject", "go", "gopher", "gtalk", "h323", "ham",
+    "hcp", "http", "https", "iax", "icap", "icon", "im", "imap", "info", "iotdisco", "ipn", "ipp", "ipps", "irc", "irc6",
+    "ircs", "iris", "iris.beep", "iris.lwz", "iris.xpc", "iris.xpcs", "isostore", "itms", "jabber", "jar", "jms", "keyparc",
+    "lastfm", "ldap", "ldaps", "magnet", "mailserver", "mailto", "maps", "market", "message", "mid", "mms", "modem", "ms-access",
+    "ms-drive-to", "ms-excel", "ms-getoffice", "ms-help", "ms-infopath", "ms-media-stream-id", "ms-project", "ms-powerpoint",
+    "ms-publisher", "ms-search-repair", "ms-secondary-screen-controller", "ms-secondary-screen-setup", "ms-settings",
+    "ms-settings-airplanemode", "ms-settings-bluetooth", "ms-settings-camera", "ms-settings-cellular", "ms-settings-cloudstorage",
+    "ms-settings-emailandaccounts", "ms-settings-language", "ms-settings-location", "ms-settings-lock", "ms-settings-nfctransactions",
+    "ms-settings-notifications", "ms-settings-power", "ms-settings-privacy", "ms-settings-proximity", "ms-settings-screenrotation",
+    "ms-settings-wifi", "ms-settings-workplace", "ms-spd", "ms-transit-to", "ms-visio", "ms-walk-to", "ms-word", "msnim",
+    "msrp", "msrps", "mtqp", "mumble", "mupdate", "mvn", "news", "nfs", "ni", "nih", "nntp", "notes", "oid", "opaquelocktoken",
+    "pack", "palm", "paparazzi", "pkcs11", "platform", "pop", "pres", "prospero", "proxy", "psyc", "query", "redis", "rediss",
+    "reload", "res", "resource", "rmi", "rsync", "rtmfp", "rtmp", "rtsp", "rtsps", "rtspu", "secondlife", "service", "session",
+    "sftp", "sgn", "shttp", "sieve", "sip", "sips", "skype", "smb", "sms", "smtp", "snews", "snmp", "soap.beep", "soap.beeps",
+    "soldat", "spotify", "ssh", "steam", "stun", "stuns", "submit", "svn", "tag", "teamspeak", "tel", "teliaeid", "telnet",
+    "tftp", "things", "thismessage", "tip", "tn3270", "turn", "turns", "tv", "udp", "unreal", "urn", "ut2004", "vemmi",
+    "ventrilo", "videotex", "view-source", "wais", "webcal", "ws", "wss", "wtai", "wyciwyg", "xcon", "xcon-userid", "xfire",
+    "xmlrpc.beep", "xmlrpc.beeps", "xmpp", "xri", "ymsgr", "z39.50", "z39.50r", "z39.50s")
   def eval(expr: URI_AST): URI_Return_Value = {
     expr match {
       case URI_URI(scheme, hier_part, query, fragment) ⇒
@@ -69,7 +91,7 @@ class evalURI {
           case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(m1 ++ m2)
         }
       case URI_Relative_Part_Path(path) ⇒ eval(path)
-      case URI_Scheme(s)                ⇒ URI_Map(Map("scheme" -> Left(s)))
+      case URI_Scheme(s)                ⇒ URI_Map(Map("scheme" -> Left(s)) ++ Map("protocol" -> Left(protocols.find((p: String) ⇒ p == s.toLowerCase).getOrElse(""))))
       case URI_Hier_Part_Absolute(authority, path) ⇒
         ((eval(authority),
           eval(path)): @unchecked) match {
@@ -119,7 +141,7 @@ class evalURI {
         }
       case URI_User(user)                   ⇒ URI_Map(Map("user" -> Left(user)))
       case URI_Password(password)           ⇒ URI_Map(Map("password" -> Left(password)))
-      case URI_Reg_Name(name)               ⇒ URI_String(URLDecoder.decode(name,"UTF-8"))
+      case URI_Reg_Name(name)               ⇒ URI_String(URLDecoder.decode(name, "UTF-8"))
       case URI_Port(port)                   ⇒ URI_Map(Map("port" -> Left(port)))
       case URI_Path(path)                   ⇒ eval(path)
       case URI_Path_AbEmpty(path_abempty)   ⇒ URI_Map(Map("path" -> Left(URLDecoder.decode(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y), "UTF-8"))))
