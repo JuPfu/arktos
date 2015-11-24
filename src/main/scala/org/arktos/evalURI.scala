@@ -24,9 +24,7 @@ import scala.compat.Platform.currentTime
 
 object evalURI {
   def apply() = new evalURI()
-}
 
-class evalURI {
   val protocols = Set("aaa", "aaas", "about", "acap", "acct", "acr", "adiumxtra", "afp", "afs", "aim", "appdata", "apt",
     "attachment", "aw", "barion", "beshare", "bitcoin", "blob", "bolo", "callto", "cap", "chrome", "chrome-extension",
     "cid", "coap", "coaps", "com-eventbrite-attendee", "content", "crid", "cvs", "data", "dav", "dict", "dlna-playcontainer",
@@ -49,6 +47,12 @@ class evalURI {
     "tftp", "things", "thismessage", "tip", "tn3270", "turn", "turns", "tv", "udp", "unreal", "urn", "ut2004", "vemmi",
     "ventrilo", "videotex", "view-source", "wais", "webcal", "ws", "wss", "wtai", "wyciwyg", "xcon", "xcon-userid", "xfire",
     "xmlrpc.beep", "xmlrpc.beeps", "xmpp", "xri", "ymsgr", "z39.50", "z39.50r", "z39.50s")
+}
+
+class evalURI {
+
+  import evalURI.protocols
+
   def eval(expr: URI_AST): URI_Return_Value = {
     expr match {
       case URI_URI(scheme, hier_part, query, fragment) ⇒
