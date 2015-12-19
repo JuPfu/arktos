@@ -27,7 +27,7 @@ object Main extends App {
 
   val cmdLineArgs = argsParser.parse(args, Config())
 
-  if (cmdLineArgs == None) {
+  if (cmdLineArgs.isEmpty) {
     sys.exit(1)
   }
 
@@ -56,8 +56,8 @@ object Main extends App {
       System.out.println("RESULT->" + m.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v })
       val me: Double = System.currentTimeMillis - ms
       System.err.println("Used time " + (me / 1000.0))
-    case Failure(e: ParseError) ⇒ System.err.println("Input '" + args(0) + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
-    case Failure(e)             ⇒ System.err.println("Input '" + args(0) + "': Unexpected error during parsing run: " + e)
+    case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
+    case Failure(e)             ⇒ System.err.println("Input '" + input_uri + "': Unexpected error during parsing run: " + e)
   }
 }
 

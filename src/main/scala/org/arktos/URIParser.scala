@@ -57,6 +57,9 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   val query_delims = CharPredicate('!', '$', '\'', '(', ')', '*', '+', ',', ';')
   // reserved      = gen-delims / sub-delims
   val reserved = gen_delims ++ sub_delims
+  //
+  val supplement = CharPredicate('\u00C0' to '\u00D6', '\u00D8' to '\u00F6', '\u00F8' to '\u02FF', '\u0370' to '\u037D', '\u037F' to '\u1FFF',
+    '\u200C' to '\u200D', '\u2070' to '\u218F', '\u2C00' to '\u2FeF', '\u3001' to '\uD7FF', '\uF900' to '\uFDCF', '\uFDF0' to '\uFFFD')
 
   // URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
   def URI = rule { scheme ~ ':' ~ hier_part ~ ('?' ~ query).? ~ ('#' ~ fragment).? ~> URI_URI }
@@ -206,7 +209,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def queryVariable = rule { capture((qchar | '/' | '?').*) ~> URI_QueryVariable }
   def queryValue = rule { capture((qchar | '/' | '?').*) ~> URI_QueryValue }
   def queryToken = rule { capture((qchar | '/' | '?').*) ~> URI_QueryToken }
-  def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' }
+  def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' /* | supplement */ }
 
   // fragment      = *( pchar / "/" / "?" )
   def fragment = rule { atomic(capture((pchar | '/' | '?').*)) ~> URI_Fragment }
