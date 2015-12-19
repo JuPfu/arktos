@@ -53,4 +53,64 @@ class arktosSpec extends FlatSpec {
         false
     }
   }
+
+  """The URI  'urn:isbn:0451450523'""" must "succeed" taggedAs (rfc3986) in {
+
+    val ms: Double = System.currentTimeMillis
+
+    val input_uri = """urn:isbn:0451450523"""
+
+    val parser = URIParser(input_uri)
+
+    val res = parser.URI_reference.run() match {
+      case Success(x) ⇒
+        val m = ((new evalURI).eval(x): @unchecked) match {
+          case URI_Map(x) ⇒ x
+        }
+        val uri = m.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v }
+        val me: Double = System.currentTimeMillis - ms
+        System.err.println("Used time " + (me / 1000.0))
+        val p = uri.getOrElse("params", List()).asInstanceOf[List[(String,String)]].map({case (k,v) => k+"="+v}).mkString("&")
+        val uri_synthesized = uri.getOrElse("protocol", uri.get("scheme")) +
+          ":" + uri.getOrElse("authority", "") +
+          uri.getOrElse("path", "") +
+          (if ( p.length > 0 ) "?" else "") + p +
+          uri.getOrElse("hash", "")
+        assert(input_uri == uri_synthesized)
+      case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
+        false
+      case Failure(e) ⇒ System.err.println("Input '" + input_uri + "': Unexpected error during parsing run: " + e)
+        false
+    }
+  }
+
+  """The URI  'urn:lex:eu:council:directive:2010-03-09;2010-19-UE'""" must "succeed" taggedAs (rfc3986) in {
+
+    val ms: Double = System.currentTimeMillis
+
+    val input_uri = """urn:lex:eu:council:directive:2010-03-09;2010-19-UE"""
+
+    val parser = URIParser(input_uri)
+
+    val res = parser.URI_reference.run() match {
+      case Success(x) ⇒
+        val m = ((new evalURI).eval(x): @unchecked) match {
+          case URI_Map(x) ⇒ x
+        }
+        val uri = m.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v }
+        val me: Double = System.currentTimeMillis - ms
+        System.err.println("Used time " + (me / 1000.0))
+        val p = uri.getOrElse("params", List()).asInstanceOf[List[(String,String)]].map({case (k,v) => k+"="+v}).mkString("&")
+        val uri_synthesized = uri.getOrElse("protocol", uri.get("scheme")) +
+          ":" + uri.getOrElse("authority", "") +
+          uri.getOrElse("path", "") +
+          (if ( p.length > 0 ) "?" else "") + p +
+          uri.getOrElse("hash", "")
+        assert(input_uri == uri_synthesized)
+      case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
+        false
+      case Failure(e) ⇒ System.err.println("Input '" + input_uri + "': Unexpected error during parsing run: " + e)
+        false
+    }
+  }
 }
