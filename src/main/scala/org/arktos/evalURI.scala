@@ -54,7 +54,6 @@ class evalURI {
   import evalURI.protocols
 
   def eval(expr: URI_AST): URI_Return_Value = {
-    System.err.println("expr="+expr)
     expr match {
       case URI_URI(scheme, hier_part, query, fragment) ⇒
         ((((eval(scheme),

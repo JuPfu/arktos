@@ -46,8 +46,6 @@ class arktosSpec extends FlatSpec {
           uri.getOrElse("path", "") +
           (if (path.length > 0) "?" + path else "") +
           uri.getOrElse("hash", "")
-        System.err.println("uri_synthesized="+uri_synthesized)
-        System.err.println("uri="+uri)
         assert(input_uri == uri_synthesized)
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
         false
