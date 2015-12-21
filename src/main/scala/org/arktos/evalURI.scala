@@ -54,6 +54,7 @@ class evalURI {
   import evalURI.protocols
 
   def eval(expr: URI_AST): URI_Return_Value = {
+    System.err.println("expr="+expr)
     expr match {
       case URI_URI(scheme, hier_part, query, fragment) ⇒
         ((((eval(scheme),
@@ -84,8 +85,8 @@ class evalURI {
             case None    ⇒ URI_String("")
           }): @unchecked) match {
           case (URI_Map(m1), URI_Map(m2), URI_Map(m3))       ⇒ URI_Map(m1 ++ m2 ++ m3)
-          case (URI_Map(m1), URI_Map(m2), URI_String(s))     ⇒ URI_Map(m1 ++ m2)
-          case (URI_Map(m1), URI_String(s), URI_Map(m3))     ⇒ URI_Map(m1 ++ m3)
+          case (URI_Map(m1), URI_Map(m2), URI_String(s3))    ⇒ URI_Map(m1 ++ m2)
+          case (URI_Map(m1), URI_String(s2), URI_Map(m3))    ⇒ URI_Map(m1 ++ m3)
           case (URI_Map(m1), URI_String(s2), URI_String(s3)) ⇒ URI_Map(m1)
         }): @unchecked) match {
           case URI_Map(m) ⇒ URI_Map(m ++ Map("uri_type" -> Left("relative")))
@@ -99,7 +100,7 @@ class evalURI {
       case URI_Hier_Part_Absolute(authority, path) ⇒
         ((eval(authority),
           eval(path)): @unchecked) match {
-          case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(m1 ++ m2)
+          case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(Map("scheme_postfix" -> Left("//")) ++ m1 ++ m2)
         }
       case URI_Hier_Part_Path(path) ⇒ eval(path)
       case URI_Reference(rule)      ⇒ eval(rule)
@@ -157,17 +158,17 @@ class evalURI {
         case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(URLDecoder.decode(s, "UTF-8"))))
       }
       case URI_IP_Literal(rule)     ⇒ eval(rule)
-      case URI_IPvFuture(ipvfuture) ⇒ URI_String(ipvfuture)
-      case URI_IPv6Address(address) ⇒ URI_String(address)
+      case URI_IPvFuture(ipvfuture) ⇒ URI_String("[" + ipvfuture + "]")
+      case URI_IPv6Address(address) ⇒ URI_String("[" + address + "]")
       case URI_IPv4Address(address) ⇒ URI_String(address)
       case URI_Query(rule) ⇒
         val params = traverseParameterList(rule, Nil)
-        val decoded_params = params.map((x) ⇒ (URLDecoder.decode(x._1, "UTF-8"), URLDecoder.decode(x._2, "UTF-8")))
+        val decoded_params = params.map((x) ⇒ (URLDecoder.decode(x._1, "UTF-8"), if (x._2 != null) URLDecoder.decode(x._2, "UTF-8") else x._2))
         URI_Map(
           Map("params" -> Right(decoded_params)) ++
             Map("raw_params" -> Right(params)) ++
-            Map("query" -> Left(params.map((x) ⇒ URLDecoder.decode(x._1, "UTF-8") + "=" + URLDecoder.decode(x._2, "UTF-8")).mkString("&"))) ++
-            Map("raw_query" -> Left(params.map((x) ⇒ x._1 + "=" + x._2).mkString("&")))
+            Map("query" -> Left(params.map((x) ⇒ URLDecoder.decode(x._1, "UTF-8") + (if (x._2 != null) "=" + URLDecoder.decode(x._2, "UTF-8") else "")).mkString("&"))) ++
+            Map("raw_query" -> Left(params.map((x) ⇒ x._1 + (if (x._2 != null) "=" + x._2 else "")).mkString("&")))
         )
       case URI_QueryParameter(queryVariable, queryValue) ⇒
         ((eval(queryVariable), eval(queryValue)): @unchecked) match {
@@ -189,10 +190,10 @@ class evalURI {
 
   @tailrec
   private def traverseParameterList(l: Seq[URI_AST], params: List[(String, String)]): List[(String, String)] = l match {
-    case Nil ⇒ params
     case x +: xs ⇒ (eval(x): @unchecked) match {
       case URI_Tuple((k, v)) ⇒ traverseParameterList(xs, params ::: (k, v) :: Nil)
-      case URI_String(t)     ⇒ traverseParameterList(xs, params ::: (t, "") :: Nil)
+      case URI_String(t)     ⇒ traverseParameterList(xs, params ::: (t, null) :: Nil)
     }
+    case Nil ⇒ params
   }
 }
