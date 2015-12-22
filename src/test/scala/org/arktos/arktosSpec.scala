@@ -54,55 +54,55 @@ class arktosSpec extends FlatSpec {
     }
   }
 
-  """The URI  'http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content'""" must "succeed" taggedAs (rfc3986) in {
     testURI( """http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content""")
   }
 
-  """The URI  'urn:isbn:0451450523'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'urn:isbn:0451450523'""" must "succeed" taggedAs (rfc3986) in {
     testURI( """urn:isbn:0451450523""")
   }
 
-  """The URI  'urn:lex:eu:council:directive:2010-03-09;2010-19-UE'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'urn:lex:eu:council:directive:2010-03-09;2010-19-UE'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""urn:lex:eu:council:directive:2010-03-09;2010-19-UE""")
   }
 
-  """The URI  'ftp://ftp.is.co.za/rfc/rfc1808.txt'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'ftp://ftp.is.co.za/rfc/rfc1808.txt'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""ftp://ftp.is.co.za/rfc/rfc1808.txt""")
   }
 
-  """The URI  'http://www.ietf.org/rfc/rfc2396.txt'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'http://www.ietf.org/rfc/rfc2396.txt'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""http://www.ietf.org/rfc/rfc2396.txt""")
   }
 
-  """The URI  'ldap://[2001:db8::7]/c=GB?objectClass?one'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'ldap://[2001:db8::7]/c=GB?objectClass?one'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""ldap://[2001:db8::7]/c=GB?objectClass?one""")
   }
 
-  """The URI  'mailto:John.Doe@example.com'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'mailto:John.Doe@example.com'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""mailto:John.Doe@example.com""")
   }
 
-  """The URI  'news:comp.infosystems.www.servers.unix'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'news:comp.infosystems.www.servers.unix'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""news:comp.infosystems.www.servers.unix""")
   }
 
-  """The URI  'tel:+1-816-555-1212'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'tel:+1-816-555-1212'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""tel:+1-816-555-1212""")
   }
 
-  """The URI  'telnet://192.0.2.16:80/'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'telnet://192.0.2.16:80/'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""telnet://192.0.2.16:80/""")
   }
 
-  """The URI  'foo://example.com:8042/over/there?name=ferret#nose'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'foo://example.com:8042/over/there?name=ferret#nose'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""foo://example.com:8042/over/there?name=ferret#nose""")
   }
 
-  """The URI  'urn:oasis:names:specification:docbook:dtd:xml:4.1.2'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'urn:oasis:names:specification:docbook:dtd:xml:4.1.2'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""urn:oasis:names:specification:docbook:dtd:xml:4.1.2""")
   }
 
-  """The URI  'http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky""")
   }
 }
