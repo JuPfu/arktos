@@ -23,8 +23,10 @@ import java.io.ByteArrayOutputStream
  *
  * The conversion process is the reverse of that used by the URIEncoder class.
  *
- * The rules of the RFC3986 URIParser assure the correctness of the syntax for hex-encoded characters.
- *
+ * The rules of the RFC3986 URIParser assure the correctness of the syntax for hex-encoded characters passed as
+ * arguments to the decode function of this class. The input string contains only legal characters and correctly formed
+ * pct-encoded characters (pct-encoded = "%" HEXDIG HEXDIG). Therefore no validation or sanity checks are part of
+ * the decode function.
  */
 
 object URIDecoder {
@@ -33,41 +35,20 @@ object URIDecoder {
 
 class URIDecoder {
 
-  final val NOT_ENCODED = 0
-  final val PCT_ENCODED_HIGH = 1
-  final val PCT_ENCODED_LOW = 2
-
   def decode(s: String): String = {
 
-    val bos = new ByteArrayOutputStream()
+    def hexToChar(c: Char) = if (c <= 57) c - 48 else if (c <= 70) c - 55 else c - 87
 
-    var high_byte = 0
-
-    var status = NOT_ENCODED
+    val bos = new ByteArrayOutputStream(1024)
 
     val iterator = s.iterator
 
     while (iterator.hasNext) {
       val c = iterator.next()
-      if (status == NOT_ENCODED) {
-        if (c != '%')
-          bos.write(c)
-        else
-          status = PCT_ENCODED_HIGH
-      } else if (status == PCT_ENCODED_HIGH) {
-        if (c <= '9')
-          high_byte = c - '0'
-        else if (c <= 'F')
-          high_byte = c - '7'
-        else
-          high_byte = c - 'W'
-
-        status = PCT_ENCODED_LOW
-      } else if (status == PCT_ENCODED_LOW) {
-
-        bos.write((high_byte << 4 | (if (c <= '9') c - '0' else if (c <= 'F') c - '7' else c - 'W')))
-
-        status = NOT_ENCODED
+      if (c != '%')
+        bos.write(c)
+      else {
+        bos.write(hexToChar(iterator.next()) << 4 | hexToChar(iterator.next()))
       }
     }
     bos.toString("UTF-8")

@@ -153,7 +153,7 @@ class evalURI {
       case URI_Path_Rootless(path_rootless) ⇒ URI_Map(Map("path" -> Left(uridecoder.decode(path_rootless.mkString("/")))))
       case URI_Path_Empty(path_empty)       ⇒ URI_Map(Map("path" -> Left(path_empty)))
       case URI_Host(rule) ⇒ (eval(rule): @unchecked) match {
-        case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(uridecoder.decode(s))))
+        case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s)))
       }
       case URI_IP_Literal(rule)     ⇒ eval(rule)
       case URI_IPvFuture(ipvfuture) ⇒ URI_String("[" + ipvfuture + "]")
