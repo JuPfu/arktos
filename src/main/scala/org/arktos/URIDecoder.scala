@@ -23,8 +23,7 @@ import java.io.ByteArrayOutputStream
  *
  * The conversion process is the reverse of that used by the URIEncoder class.
  *
- * The input is assumed to consist of valid encoded characters.
- * The syntax rules of the URI
+ * The rules of the RFC3986 URIParser assure the correctness of the syntax for hex-encoded characters.
  *
  */
 

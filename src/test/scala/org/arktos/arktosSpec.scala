@@ -32,20 +32,25 @@ class arktosSpec extends FlatSpec {
     val parser = URIParser(input_uri)
     val res = parser.URI_reference.run() match {
       case Success(x) ⇒
-        val m = ((new evalURI).eval(x): @unchecked) match {
+        val uri = ((new evalURI).eval(x): @unchecked) match {
           case URI_Map(x) ⇒ x
         }
-        val uri = m.mapValues { case Left(v) ⇒ v; case Right(v) ⇒ v }
+
         val me: Double = System.currentTimeMillis - ms
         System.err.println("Used time " + (me / 1000.0))
-        val path = uri.getOrElse("params", List()).asInstanceOf[List[(String, String)]].map({ case (k, null) => k; case (k, v) => k + "=" + URLEncoder.encode(v, "UTF-8") }).mkString("&")
-        val protocol = uri.getOrElse("protocol", "").asInstanceOf[String]
-        val scheme = if ( protocol == "") uri.getOrElse("scheme", "").asInstanceOf[String] else protocol
-        val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":" + uri.getOrElse("scheme_postfix", "") else "") +
-          uri.getOrElse("authority", "") +
-          uri.getOrElse("path", "") +
+
+        val protocol = (uri.getOrElse("protocol", Left("")) : @unchecked) match { case Left(v) => v }
+        val scheme = if ( protocol == "") ((uri.getOrElse("scheme", Left("")) : @unchecked) match { case Left(v) => v }) else protocol
+
+        val path_list = (uri.getOrElse("params", Right(List())) : @unchecked) match { case Right(v) => v }
+        val path = path_list.map({ case (k, null) => k; case (k, v) => k + "=" + URLEncoder.encode(v, "UTF-8") }).mkString("&")
+
+        val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":" + ((uri.getOrElse("scheme_postfix", Left("")): @unchecked) match { case Left(v) => v }) else "") +
+          ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) => v }) +
+          ((uri.getOrElse("path", Left("")) : @unchecked) match { case Left(v) => v }) +
           (if (path.length > 0) "?" + path else "") +
-          uri.getOrElse("hash", "")
+          ((uri.getOrElse("hash", Left("")) : @unchecked) match { case Left(v) => v })
+
         assert(input_uri == uri_synthesized)
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
         false
@@ -104,5 +109,25 @@ class arktosSpec extends FlatSpec {
 
   """The URI 'http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky""")
+  }
+
+  """The URI 'http://[2001:0db8:85a3:08d3:1319:8a2e:0370:7344]:8080/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:0db8:85a3:08d3:1319:8a2e:0370:7344]:8080/""")
+  }
+
+  """The URI 'http://[2002:4559:1FE2::4559:1FE2]:8080/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2002:4559:1FE2::4559:1FE2]:8080/""")
+  }
+
+  """The URI 'http://[2002:4559:1FE2:0:0:0:4559:1FE2]:8080/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2002:4559:1FE2:0:0:0:4559:1FE2]:8080/""")
+  }
+
+  """The URI 'http://[2002:4559:1FE2:0000:0000:0000:4559:1FE2]:8080/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2002:4559:1FE2:0000:0000:0000:4559:1FE2]:8080/""")
+  }
+
+  """The URI 'http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/""")
   }
 }

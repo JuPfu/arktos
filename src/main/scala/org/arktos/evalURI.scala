@@ -22,6 +22,8 @@ import scala.annotation.tailrec
 object evalURI {
   def apply() = new evalURI()
 
+  val uridecoder = new URIDecoder()
+
   val protocols = Set("aaa", "aaas", "about", "acap", "acct", "acr", "adiumxtra", "afp", "afs", "aim", "appdata", "apt",
     "attachment", "aw", "barion", "beshare", "bitcoin", "blob", "bolo", "callto", "cap", "chrome", "chrome-extension",
     "cid", "coap", "coaps", "com-eventbrite-attendee", "content", "crid", "cvs", "data", "dav", "dict", "dlna-playcontainer",
@@ -48,7 +50,7 @@ object evalURI {
 
 class evalURI {
 
-  import evalURI.protocols
+  import evalURI.{ protocols, uridecoder }
 
   def eval(expr: URI_AST): URI_Return_Value = {
     expr match {
@@ -140,18 +142,18 @@ class evalURI {
           case (URI_Map(m1), URI_Map(m2))   ⇒ URI_Map(m1 ++ m2 ++ Map("userinfo" -> m1("user").left.map(_ + ":" + m2("password").left.get)))
           case (URI_Map(m1), URI_String(s)) ⇒ URI_Map(m1 ++ Map("userinfo" -> m1("user")))
         }
-      case URI_User(user)                   ⇒ URI_Map(Map("user" -> Left(user)))
-      case URI_Password(password)           ⇒ URI_Map(Map("password" -> Left(password)))
-      case URI_Reg_Name(name)               ⇒ URI_String((new URIDecoder).decode(name))
+      case URI_User(user)                   ⇒ URI_Map(Map("user" -> Left(uridecoder.decode(user))))
+      case URI_Password(password)           ⇒ URI_Map(Map("password" -> Left(uridecoder.decode(password))))
+      case URI_Reg_Name(name)               ⇒ URI_String(uridecoder.decode(name))
       case URI_Port(port)                   ⇒ URI_Map(Map("port" -> Left(port)))
       case URI_Path(path)                   ⇒ eval(path)
-      case URI_Path_AbEmpty(path_abempty)   ⇒ URI_Map(Map("path" -> Left((new URIDecoder).decode(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y)))))
-      case URI_Path_Absolute(path_absolute) ⇒ URI_Map(Map("path" -> Left((new URIDecoder).decode(path_absolute.foldLeft("")((x, y) ⇒ x + "/" + y)))))
-      case URI_Path_NoScheme(path_noscheme) ⇒ URI_Map(Map("path" -> Left((new URIDecoder).decode(path_noscheme.mkString("/")))))
-      case URI_Path_Rootless(path_rootless) ⇒ URI_Map(Map("path" -> Left((new URIDecoder).decode(path_rootless.mkString("/")))))
+      case URI_Path_AbEmpty(path_abempty)   ⇒ URI_Map(Map("path" -> Left(uridecoder.decode(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y)))))
+      case URI_Path_Absolute(path_absolute) ⇒ URI_Map(Map("path" -> Left(uridecoder.decode(path_absolute.foldLeft("")((x, y) ⇒ x + "/" + y)))))
+      case URI_Path_NoScheme(path_noscheme) ⇒ URI_Map(Map("path" -> Left(uridecoder.decode(path_noscheme.mkString("/")))))
+      case URI_Path_Rootless(path_rootless) ⇒ URI_Map(Map("path" -> Left(uridecoder.decode(path_rootless.mkString("/")))))
       case URI_Path_Empty(path_empty)       ⇒ URI_Map(Map("path" -> Left(path_empty)))
       case URI_Host(rule) ⇒ (eval(rule): @unchecked) match {
-        case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left((new URIDecoder).decode(s))))
+        case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(uridecoder.decode(s))))
       }
       case URI_IP_Literal(rule)     ⇒ eval(rule)
       case URI_IPvFuture(ipvfuture) ⇒ URI_String("[" + ipvfuture + "]")
@@ -159,11 +161,11 @@ class evalURI {
       case URI_IPv4Address(address) ⇒ URI_String(address)
       case URI_Query(rule) ⇒
         val params = traverseParameterList(rule, Nil)
-        val decoded_params = params.map((x) ⇒ ((new URIDecoder).decode(x._1), if (x._2 != null) (new URIDecoder).decode(x._2) else x._2))
+        val decoded_params = params.map((x) ⇒ (uridecoder.decode(x._1), if (x._2 != null) uridecoder.decode(x._2) else x._2))
         URI_Map(
           Map("params" -> Right(decoded_params)) ++
             Map("raw_params" -> Right(params)) ++
-            Map("query" -> Left(params.map((x) ⇒ (new URIDecoder).decode(x._1) + (if (x._2 != null) "=" + (new URIDecoder).decode(x._2) else "")).mkString("&"))) ++
+            Map("query" -> Left(params.map((x) ⇒ uridecoder.decode(x._1) + (if (x._2 != null) "=" + uridecoder.decode(x._2) else "")).mkString("&"))) ++
             Map("raw_query" -> Left(params.map((x) ⇒ x._1 + (if (x._2 != null) "=" + x._2 else "")).mkString("&")))
         )
       case URI_QueryParameter(queryVariable, queryValue) ⇒
@@ -174,7 +176,7 @@ class evalURI {
       case URI_QueryValue(queryValue)       ⇒ URI_String(queryValue)
       case URI_QueryToken(queryToken)       ⇒ URI_String(queryToken)
       case URI_Fragment(fragment) ⇒
-        val decoded_fragment = (new URIDecoder).decode(fragment)
+        val decoded_fragment = uridecoder.decode(fragment)
         URI_Map(
           Map("fragment" -> Left(decoded_fragment)) ++
             Map("hash" -> Left("#" + decoded_fragment)) ++
