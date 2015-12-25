@@ -37,7 +37,7 @@ class URIDecoder {
 
   def decode(s: String): String = {
 
-    def hexToHalfByte(c: Char) = if (c <= '9') c - '0' else if (c <= 'F') c - '7' else c - 'W'
+    def PCTEncodedOctetToNibble(c: Char) = if (c <= '9') c - '0' else if (c <= 'F') c - '7' else c - 'W'
 
     val bos = new ByteArrayOutputStream(1024)
 
@@ -48,7 +48,7 @@ class URIDecoder {
       if (c != '%')
         bos.write(c)
       else {
-        bos.write(hexToHalfByte(iterator.next()) << 4 | hexToHalfByte(iterator.next()))
+        bos.write(PCTEncodedOctetToNibble(iterator.next()) << 4 | PCTEncodedOctetToNibble(iterator.next()))
       }
     }
     bos.toString("UTF-8")
