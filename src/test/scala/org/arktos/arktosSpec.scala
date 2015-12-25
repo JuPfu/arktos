@@ -53,9 +53,9 @@ class arktosSpec extends FlatSpec {
 
         assert(input_uri == uri_synthesized)
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
-        false
+        assert(false, e)
       case Failure(e) ⇒ System.err.println("Input '" + input_uri + "': Unexpected error during parsing run: " + e)
-        false
+        assert(false, e)
     }
   }
 
@@ -108,7 +108,7 @@ class arktosSpec extends FlatSpec {
   }
 
   """The URI 'http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky'""" must "succeed" taggedAs (rfc3986) in {
-    testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky""")
+    testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala%2Bodersky""")
   }
 
   """The URI 'http://[2001:0db8:85a3:08d3:1319:8a2e:0370:7344]:8080/'""" must "succeed" taggedAs (rfc3986) in {
@@ -127,7 +127,44 @@ class arktosSpec extends FlatSpec {
     testURI("""http://[2002:4559:1FE2:0000:0000:0000:4559:1FE2]:8080/""")
   }
 
-  """The URI 'http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/'""" must "fail(Bracketless IPV6 Address)" taggedAs (rfc3986) in {
     testURI("""http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/""")
+  }
+
+  """The URI 'http://[2001:cdba:0000:0000:0000:0000:3257:9652]/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:cdba:0000:0000:0000:0000:3257:9652]/""")
+  }
+
+  """The URI 'http://[2001:cdba:0:0:0:0:3257:9652]/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:cdba:0:0:0:0:3257:9652]/""")
+  }
+
+  """The URI 'http://[2001:cdba::3257:9652]/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:cdba::3257:9652]/""")
+  }
+
+
+  """The URI 'http://[2001:0000:3238:DFE1:0063:0000:0000:FEFB]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:0000:3238:DFE1:0063:0000:0000:FEFB]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:0000:3238:DFE1:63:0000:0000:FEFB]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:0000:3238:DFE1:63:0000:0000:FEFB]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:0000:3238:DFE1:63::FEFB]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:0000:3238:DFE1:63::FEFB]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:0:3238:DFE1:63::FEFB]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:0:3238:DFE1:63::FEFB]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[::]/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[::]/""")
+  }
+
+  """The URI 'http://[::128]/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[::128]/""")
   }
 }
