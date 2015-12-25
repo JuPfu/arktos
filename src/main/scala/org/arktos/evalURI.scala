@@ -157,6 +157,7 @@ class evalURI {
       }
       case URI_IP_Literal(rule)     ⇒ eval(rule)
       case URI_IPvFuture(ipvfuture) ⇒ URI_String("[" + ipvfuture + "]")
+      case URI_IPvFutureLinkLocal(ipvfutureLinkLocal) ⇒ URI_String("[" + ipvfutureLinkLocal + "]")
       case URI_IPv6Address(address) ⇒ URI_String("[" + address + "]")
       case URI_IPv4Address(address) ⇒ URI_String(address)
       case URI_Query(rule) ⇒

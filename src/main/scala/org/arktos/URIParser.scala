@@ -106,11 +106,17 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   // port          = *DIGIT
   def port = rule { atomic(capture(Digit.*)) ~> URI_Port }
 
-  // IP-literal    = "[" ( IPv6address / IPvFuture  ) "]"
-  def IP_literal = rule { '[' ~ (IPv6address | IPvFuture) ~ ']' ~> URI_IP_Literal }
+  // IP-literal    = "[" ( IPv6address / IPvFuture /  "v1." IPv6address "+" ZoneID )  ) "]"
+  def IP_literal = rule { '[' ~ (IPv6address | IPvFuture | IPvFutureLinkLokal) ~ ']' ~> URI_IP_Literal }
+
+  // IPvFutureLinkLocal = "v1." IPv6address "+" ZoneID
+  def IPvFutureLinkLokal = rule { "v1." ~ clearSB ~ IPv6address ~> ((ip:URI_IPv6Address) => appendSB(ip.ipv6address)) ~ '+' ~ appendSB('+') ~ capture(ZoneID) ~> ((s:String) => appendSB(s)) ~ push(sb.toString) ~> URI_IPvFutureLinkLocal }
+
+  // ZoneID = 1*( unreserved / pct-encoded )
+  def ZoneID = rule { (unreserved | pct_encoded).+ }
 
   // IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
-  def IPvFuture = rule { atomic(capture('v' ~ HexDigit ~ '.' ~ (unreserved | sub_delims | ':'))) ~> URI_IPvFuture }
+  def IPvFuture = rule { atomic(capture('v' ~ HexDigit.+ ~ '.' ~ (unreserved | sub_delims | ':').+)) ~> URI_IPvFuture }
 
   // IPv6address   =                            6( h16 ":" ) ls32
   //               /                       "::" 5( h16 ":" ) ls32
@@ -127,7 +133,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
       capture(h16.? ~ "::" ~ 4.times(h16 ~ ':') ~ ls32) |
       capture((1 to 2).times(h16).separatedBy(':').? ~ "::" ~ 3.times(h16 ~ ':') ~ ls32) |
       capture((1 to 3).times(h16).separatedBy(':').? ~ "::" ~ 2.times(h16 ~ ':') ~ ls32) |
-      capture((1 to 4).times(h16).separatedBy(':').? ~ "::" ~ h16 ~ ':' ~ ls32 ) |
+      capture((1 to 4).times(h16).separatedBy(':').? ~ "::" ~ h16 ~ ':' ~ ls32) |
       capture((1 to 5).times(h16).separatedBy(':').? ~ "::" ~ ls32) |
       capture((1 to 6).times(h16).separatedBy(':').? ~ "::" ~ h16) |
       capture((1 to 7).times(h16).separatedBy(':').? ~ "::")) ~> URI_IPv6Address
@@ -244,6 +250,7 @@ object URIParser {
   case class URI_Port(port: String) extends URI_AST
   case class URI_IP_Literal(rule: URI_AST) extends URI_AST
   case class URI_IPvFuture(ipvfuture: String) extends URI_AST
+  case class URI_IPvFutureLinkLocal(ipvfutureLocalLink: String) extends URI_AST
   case class URI_IPv6Address(ipv6address: String) extends URI_AST
   case class URI_IPv4Address(ipv4address: String) extends URI_AST
   case class URI_Reg_Name(reg_name: String) extends URI_AST
