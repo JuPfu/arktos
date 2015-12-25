@@ -122,15 +122,15 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   //               / [ *5( h16 ":" ) h16 ] "::"              h16
   //               / [ *6( h16 ":" ) h16 ] "::"
   def IPv6address = rule {
-    atomic((capture(6.times(h16 ~ ':') ~ ls32) |
-      capture(':' ~ ':' ~ 5.times(h16 ~ ':') ~ ls32) |
-      capture(h16.? ~ ':' ~ ':' ~ 4.times(h16 ~ ':') ~ ls32) |
-      capture(((h16 ~ ':' ~ h16) | h16).? ~ ':' ~ ':' ~ 3.times(h16 ~ ':') ~ ls32) |
-      capture(((1 to 2 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ 2.times(h16 ~ ':') ~ ls32) |
-      capture(((1 to 3 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ h16 ~ ':' ~ ls32) |
-      capture(((1 to 4 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ ls32) |
-      capture(((1 to 5 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':' ~ h16) |
-      capture(((1 to 6 times (h16 ~ ':') ~ h16) | h16).? ~ ':' ~ ':'))) ~> URI_IPv6Address
+    atomic(capture(6.times(h16 ~ ':') ~ ls32) |
+      capture("::" ~ 5.times(h16 ~ ':') ~ ls32) |
+      capture(h16.? ~ "::" ~ 4.times(h16 ~ ':') ~ ls32) |
+      capture((1 to 2).times(h16).separatedBy(':').? ~ "::" ~ 3.times(h16 ~ ':') ~ ls32) |
+      capture((1 to 3).times(h16).separatedBy(':').? ~ "::" ~ 2.times(h16 ~ ':') ~ ls32) |
+      capture((1 to 4).times(h16).separatedBy(':').? ~ "::" ~ h16 ~ ':' ~ ls32 ) |
+      capture((1 to 5).times(h16).separatedBy(':').? ~ "::" ~ ls32) |
+      capture((1 to 6).times(h16).separatedBy(':').? ~ "::" ~ h16) |
+      capture((1 to 7).times(h16).separatedBy(':').? ~ "::")) ~> URI_IPv6Address
   }
 
   // h16           = 1*4HEXDIG
