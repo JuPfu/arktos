@@ -39,17 +39,16 @@ class arktosSpec extends FlatSpec {
         val me: Double = System.currentTimeMillis - ms
         System.err.println("Used time " + (me / 1000.0))
 
-        val protocol = (uri.getOrElse("protocol", Left("")) : @unchecked) match { case Left(v) => v }
-        val scheme = if ( protocol == "") ((uri.getOrElse("scheme", Left("")) : @unchecked) match { case Left(v) => v }) else protocol
+        val protocol = if ( uri.contains("protocol")) uri("protocol").left.get else ""
+        val scheme = if ( protocol != "" ) protocol else if ( uri.contains("scheme") ) uri("scheme").left.get else ""
+        val params = if ( uri.contains("params") ) uri("params").right.get else List()
+        val params_list = params.map({ case (k, null) => k; case (k, v) => k + "=" + URLEncoder.encode(v, "UTF-8") }).mkString("&")
 
-        val path_list = (uri.getOrElse("params", Right(List())) : @unchecked) match { case Right(v) => v }
-        val path = path_list.map({ case (k, null) => k; case (k, v) => k + "=" + URLEncoder.encode(v, "UTF-8") }).mkString("&")
-
-        val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":" + ((uri.getOrElse("scheme_postfix", Left("")): @unchecked) match { case Left(v) => v }) else "") +
+        val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":") + (if ( uri.contains("scheme_postfix") ) uri("scheme_postfix").left.get else "") +
           ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) => v }) +
-          ((uri.getOrElse("path", Left("")) : @unchecked) match { case Left(v) => v }) +
-          (if (path.length > 0) "?" + path else "") +
-          ((uri.getOrElse("hash", Left("")) : @unchecked) match { case Left(v) => v })
+          (if(uri.contains("path") ) uri("path").left.get else "") +
+          (if (params_list.size > 0) "?" + params_list else "") +
+          (if (uri.contains("hash") ) uri("hash").left.get else "")
 
         assert(input_uri == uri_synthesized)
         assert(outcome)
@@ -185,5 +184,7 @@ class arktosSpec extends FlatSpec {
     testURI("""http://[2441:4880:28:3:204:76ff:f43f:6eb]:8080""")
   }
 
-
+  """The URI 'http://[fe80::bd0f:a8bc:6480:238b%2511]:8080'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[fe80::bd0f:a8bc:6480:238b%2511]:8080""")
+  }
 }
