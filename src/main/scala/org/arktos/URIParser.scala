@@ -33,7 +33,13 @@
    This grammar seamlessly extends the
    IP-literal = "[" ( IPv6address / IPvFuture  ) "]" rule defined in
    http://www.ietf.org/rfc/rfc3986.txt
-   with the IPvFuture Syntax for IPv6 Link-Local Addresses
+   with the IPv6AddressZ syntax for IPv6 Zone Identifiers in address literals
+   as described in https://tools.ietf.org/html/rfc6874
+
+   This grammar seamlessly extends the
+   IP-literal = "[" ( IPv6address / IPvFuture  ) "]" rule defined in
+   http://www.ietf.org/rfc/rfc3986.txt
+   with the IPvFuture syntax for IPv6 Link-Local Addresses
    as described in http://tools.ietf.org/id/draft-sweet-uri-zoneid-01.html.
 */
 
@@ -112,18 +118,17 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   // port          = *DIGIT
   def port = rule { atomic(capture(Digit.*)) ~> URI_Port }
 
-  // IP-literal    = "[" ( IPv6address / IPvFuture /  "v1." IPv6address "+" ZoneID )  ) "]"
-  def IP_literal = rule { '[' ~ (IPv6address | IPvFuture | IPvFutureLinkLokal) ~ ']' ~> URI_IP_Literal }
+  // IP-literal    = "[" ( IPv6address / IPvFuture /  IPv6addrz / IPvFutureLinkLocal )  ) "]"
+  def IP_literal = rule { '[' ~ (IPv6AddressZ | IPv6address | IPvFuture | IPvFutureLinkLokal) ~ ']' ~> URI_IP_Literal }
+
+  // IPv6addrz = IPv6address "%25" ZoneID
+  def IPv6AddressZ = rule { IPv6address ~ "%25"  ~ ZoneID ~> URI_IPv6AddressZ }
 
   // IPvFutureLinkLocal = "v1." IPv6address "+" ZoneID
-  def IPvFutureLinkLokal = rule {
-    "v1." ~
-      clearSB ~ IPv6address ~> ((ip: URI_IPv6Address) ⇒ appendSB(ip.ipv6address)) ~ '+' ~ appendSB('+') ~
-      capture(ZoneID) ~> ((s: String) ⇒ appendSB(s)) ~ push(sb.toString) ~> URI_IPvFutureLinkLocal
-  }
+  def IPvFutureLinkLokal = rule { "v1." ~ IPv6address ~ '+' ~ ZoneID ~> URI_IPvFutureLinkLocal }
 
   // ZoneID = 1*( unreserved / pct-encoded )
-  def ZoneID = rule { (unreserved | pct_encoded).+ }
+  def ZoneID = rule { atomic(capture((unreserved | pct_encoded).+)) ~> URI_ZoneID }
 
   // IPvFuture     = "v" 1*HEXDIG "." 1*( unreserved / sub-delims / ":" )
   def IPvFuture = rule { atomic(capture('v' ~ HexDigit.+ ~ '.' ~ (unreserved | sub_delims | ':').+)) ~> URI_IPvFuture }
@@ -260,8 +265,10 @@ object URIParser {
   case class URI_Port(port: String) extends URI_AST
   case class URI_IP_Literal(rule: URI_AST) extends URI_AST
   case class URI_IPvFuture(ipvfuture: String) extends URI_AST
-  case class URI_IPvFutureLinkLocal(ipvfutureLocalLink: String) extends URI_AST
+  case class URI_IPvFutureLinkLocal(ipv6Address: URI_IPv6Address, zoneID: URI_ZoneID) extends URI_AST
+  case class URI_ZoneID(zoneid: String) extends URI_AST
   case class URI_IPv6Address(ipv6address: String) extends URI_AST
+  case class URI_IPv6AddressZ(ipv6Address: URI_IPv6Address, zoneID: URI_ZoneID) extends URI_AST
   case class URI_IPv4Address(ipv4address: String) extends URI_AST
   case class URI_Reg_Name(reg_name: String) extends URI_AST
   case class URI_Path(rule: URI_AST) extends URI_AST
