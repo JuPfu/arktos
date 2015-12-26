@@ -155,11 +155,11 @@ class evalURI {
       case URI_Host(rule) ⇒ (eval(rule): @unchecked) match {
         case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s)))
       }
-      case URI_IP_Literal(rule)     ⇒ eval(rule)
-      case URI_IPvFuture(ipvfuture) ⇒ URI_String("[" + ipvfuture + "]")
-      case URI_IPvFutureLinkLocal(ipvfutureLinkLocal) ⇒ URI_String("[" + ipvfutureLinkLocal + "]")
-      case URI_IPv6Address(address) ⇒ URI_String("[" + address + "]")
-      case URI_IPv4Address(address) ⇒ URI_String(address)
+      case URI_IP_Literal(rule)                       ⇒ eval(rule)
+      case URI_IPvFuture(ipvfuture)                   ⇒ URI_String("[v" + ipvfuture + "]")
+      case URI_IPvFutureLinkLocal(ipvfutureLinkLocal) ⇒ URI_String("[v1." + ipvfutureLinkLocal + "]")
+      case URI_IPv6Address(address)                   ⇒ URI_String("[" + address + "]")
+      case URI_IPv4Address(address)                   ⇒ URI_String(address)
       case URI_Query(rule) ⇒
         val params = traverseParameterList(rule, Nil)
         val decoded_params = params.map((x) ⇒ (uridecoder.decode(x._1), if (x._2 != null) uridecoder.decode(x._2) else x._2))

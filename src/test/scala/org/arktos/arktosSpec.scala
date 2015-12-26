@@ -27,7 +27,7 @@ import scala.util.{Failure, Success}
 
 class arktosSpec extends FlatSpec {
 
-  def testURI(input_uri: String) = {
+  def testURI(input_uri: String, outcome: Boolean = true) = {
     val ms: Double = System.currentTimeMillis
     val parser = URIParser(input_uri)
     val res = parser.URI_reference.run() match {
@@ -52,10 +52,11 @@ class arktosSpec extends FlatSpec {
           ((uri.getOrElse("hash", Left("")) : @unchecked) match { case Left(v) => v })
 
         assert(input_uri == uri_synthesized)
+        assert(outcome)
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
-        assert(false, e)
+        assert(!outcome, e)
       case Failure(e) ⇒ System.err.println("Input '" + input_uri + "': Unexpected error during parsing run: " + e)
-        assert(false, e)
+        assert(!outcome, e)
     }
   }
 
@@ -91,8 +92,20 @@ class arktosSpec extends FlatSpec {
     testURI("""news:comp.infosystems.www.servers.unix""")
   }
 
-  """The URI 'tel:+1-816-555-1212'""" must "succeed" taggedAs (rfc3986) in {
-    testURI("""tel:+1-816-555-1212""")
+  """The URI 'tel:+1-617-253-5702'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""tel:+1-617-253-5702""")
+  }
+
+  """The URI 'fax:+1-617-258-5999'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""fax:+1-617-258-5999""")
+  }
+
+  """The URI 'mailto:timbl@w3.org'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""mailto:timbl@w3.org""")
+  }
+
+  """The URI 'http://www.w3.org/People/Berners-Lee/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://www.w3.org/People/Berners-Lee/""")
   }
 
   """The URI 'telnet://192.0.2.16:80/'""" must "succeed" taggedAs (rfc3986) in {
@@ -108,7 +121,7 @@ class arktosSpec extends FlatSpec {
   }
 
   """The URI 'http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky'""" must "succeed" taggedAs (rfc3986) in {
-    testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala%2Bodersky""")
+    testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala%2Bodersky""", true)
   }
 
   """The URI 'http://[2001:0db8:85a3:08d3:1319:8a2e:0370:7344]:8080/'""" must "succeed" taggedAs (rfc3986) in {
@@ -127,8 +140,8 @@ class arktosSpec extends FlatSpec {
     testURI("""http://[2002:4559:1FE2:0000:0000:0000:4559:1FE2]:8080/""")
   }
 
-  """The URI 'http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/'""" must "fail(Bracketless IPV6 Address)" taggedAs (rfc3986) in {
-    testURI("""http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/""")
+  """The URI 'http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://2002:4559:1FE2:0000:0000:0000:4559:1FE2:8080/""", false)
   }
 
   """The URI 'http://[2001:cdba:0000:0000:0000:0000:3257:9652]/'""" must "succeed" taggedAs (rfc3986) in {
@@ -167,4 +180,10 @@ class arktosSpec extends FlatSpec {
   """The URI 'http://[::128]/'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""http://[::128]/""")
   }
+
+  """The URI 'http://[2441:4880:28:3:204:76ff:f43f:6eb]:8080'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2441:4880:28:3:204:76ff:f43f:6eb]:8080""")
+  }
+
+
 }

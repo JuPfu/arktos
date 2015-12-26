@@ -29,6 +29,12 @@
    Obsoletes: 2732, 2396, 1808                                  L. Masinter
    Category: Standards Track                                  Adobe Systems
                                                                January 2005
+
+   This grammar seamlessly extends the
+   IP-literal = "[" ( IPv6address / IPvFuture  ) "]" rule defined in
+   http://www.ietf.org/rfc/rfc3986.txt
+   with the IPvFuture Syntax for IPv6 Link-Local Addresses
+   as described in http://tools.ietf.org/id/draft-sweet-uri-zoneid-01.html.
 */
 
 package org.arktos
@@ -110,7 +116,11 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def IP_literal = rule { '[' ~ (IPv6address | IPvFuture | IPvFutureLinkLokal) ~ ']' ~> URI_IP_Literal }
 
   // IPvFutureLinkLocal = "v1." IPv6address "+" ZoneID
-  def IPvFutureLinkLokal = rule { "v1." ~ clearSB ~ IPv6address ~> ((ip:URI_IPv6Address) => appendSB(ip.ipv6address)) ~ '+' ~ appendSB('+') ~ capture(ZoneID) ~> ((s:String) => appendSB(s)) ~ push(sb.toString) ~> URI_IPvFutureLinkLocal }
+  def IPvFutureLinkLokal = rule {
+    "v1." ~
+      clearSB ~ IPv6address ~> ((ip: URI_IPv6Address) ⇒ appendSB(ip.ipv6address)) ~ '+' ~ appendSB('+') ~
+      capture(ZoneID) ~> ((s: String) ⇒ appendSB(s)) ~ push(sb.toString) ~> URI_IPvFutureLinkLocal
+  }
 
   // ZoneID = 1*( unreserved / pct-encoded )
   def ZoneID = rule { (unreserved | pct_encoded).+ }

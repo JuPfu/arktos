@@ -3,10 +3,10 @@ import scalariform.formatter.preferences._
 
 val commonSettings = Seq(
   version := "0.1.0",
-  scalaVersion := "2.11.6",
-  name := "URI",
-  organization := "org.arktos",
-  homepage := Some(new URL("http://arktos.org")),
+  scalaVersion := "2.11.7",
+  name := "arktos",
+  organization := "com.github.jupfu",
+  homepage := Some(new URL("http://github.com/JuPfu/arktos")),
   description := "URI Parser",
   startYear := Some(2014),
   licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
@@ -39,7 +39,7 @@ test in assembly := {}
 
 val parboiled2       = "org.parboiled"   %% "parboiled"        % "2.1.0"
 val scopt            = "com.github.scopt" %% "scopt" % "3.3.0"
-val scalaTest        = "org.scalatest"   % "scalatest_2.11"    % "2.2.1" % "test"
+val scalaTest        = "org.scalatest"   % "scalatest_2.11"    % "2.2.4" % "test"
 
 /////////////////////// PROJECTS /////////////////////////
 
@@ -59,7 +59,8 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 libraryDependencies ++= Seq(parboiled2, scopt, scalaTest)
 
-lazy val uri = project
+lazy val arktos = project.in(file("."))
   .settings(formattingSettings: _*)
   .settings(commonSettings: _*)
   .settings(libraryDependencies ++= Seq(parboiled2, scopt, scalaTest))
+
