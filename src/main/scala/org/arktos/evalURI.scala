@@ -92,7 +92,7 @@ class evalURI {
       case URI_Relative_Part(authority, path) ⇒
         ((eval(authority), eval(path)): @unchecked) match { case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(m1 ++ m2) }
       case URI_Relative_Part_Path(path) ⇒ eval(path)
-      case URI_Scheme(s)                ⇒ URI_Map(Map("scheme" -> Left(s)) ++ Map("protocol" -> Left(protocols.find((p: String) ⇒ p == s.toLowerCase).getOrElse(""))))
+      case URI_Scheme(s)                ⇒ URI_Map(Map("scheme" -> Left(s)) ++ Map("protocol" -> Left(protocols.find(_ == s.toLowerCase).getOrElse(""))))
       case URI_Hier_Part_Absolute(authority, path) ⇒
         ((eval(authority),
           eval(path)): @unchecked) match {
@@ -150,27 +150,31 @@ class evalURI {
       case URI_Path_NoScheme(path_noscheme) ⇒ URI_Map(Map("path" -> Left(uridecoder.decode(path_noscheme.mkString("/")))))
       case URI_Path_Rootless(path_rootless) ⇒ URI_Map(Map("path" -> Left(uridecoder.decode(path_rootless.mkString("/")))))
       case URI_Path_Empty(path_empty)       ⇒ URI_Map(Map("path" -> Left(path_empty)))
-      case URI_Host(rule) ⇒ (eval(rule): @unchecked) match {
-        case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s)))
-      }
+      case URI_Host(rule) ⇒
+        val hostname = eval(rule)
+        (rule: @unchecked) match {
+          case URI_IP_Literal(literal)      ⇒ (hostname: @unchecked) match { case URI_Map(m) ⇒ URI_Map(m ++ Map("hostname" -> m("ipliteral"))) }
+          case URI_IPv4Address(ipv4address) ⇒ (hostname: @unchecked) match { case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s))) }
+          case URI_Reg_Name(regname)        ⇒ (hostname: @unchecked) match { case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s))) }
+        }
       case URI_IP_Literal(ipLiteral) ⇒
         val literal = eval(ipLiteral)
         (ipLiteral: @unchecked) match {
-          case URI_IPvFuture(ip)                     ⇒ (literal: @unchecked) match { case URI_Map(m) ⇒ URI_String("[v" + m("ipvfuture").left.get + "]") }
-          case URI_IPv6Address(ip)                   ⇒ (literal: @unchecked) match { case URI_Map(m) ⇒ URI_String("[" + m("ipv6address").left.get + "]") }
-          case URI_IPv6AddressZ(address, zone)       ⇒ (literal: @unchecked) match { case URI_Map(m) ⇒ URI_String("[" + m("ipv6addressz").left.get + "]") }
-          case URI_IPvFutureLinkLocal(address, zone) ⇒ (literal: @unchecked) match { case URI_Map(m) ⇒ URI_String("[v1." + m("ipvfuturelinklocal").left.get + "]") }
+          case URI_IPv6Address(ip)                   ⇒ (literal: @unchecked) match { case URI_Map(m) ⇒ println("URI_MAP(m)=" + m); URI_Map(m ++ Map("ipliteral" -> Left("[" + m("ipv6address").left.get + "]"))) }
+          case URI_IPv6AddressZ(address, zone)       ⇒ (literal: @unchecked) match { case URI_Map(m) ⇒ println("URI_MAP(m)=" + m); URI_Map(m ++ Map("ipliteral" -> Left("[" + m("ipv6addressz").left.get + "]"))) }
+          case URI_IPvFuture(ip)                     ⇒ (literal: @unchecked) match { case URI_Map(m) ⇒ println("URI_MAP(m)=" + m); URI_Map(m ++ Map("ipliteral" -> Left("[v" + m("ipvfuture").left.get + "]"))) }
+          case URI_IPvFutureLinkLocal(address, zone) ⇒ (literal: @unchecked) match { case URI_Map(m) ⇒ println("URI_MAP(m)=" + m); URI_Map(m ++ Map("ipliteral" -> Left("[v1." + m("ipvfuturelinklocal").left.get + "]"))) }
         }
       case URI_IPvFuture(ipvfuture) ⇒ URI_Map(Map("ipvfuture" -> Left(ipvfuture)))
       case URI_IPvFutureLinkLocal(ipv6Address, zoneID) ⇒ ((eval(ipv6Address), eval(zoneID)): @unchecked) match {
-        case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(Map("ipvfuturelinklocal" -> Left(("v1." + m1("ipv6address").left.get + m2("zoneid").left.get))))
+        case (URI_Map(m1), URI_Map(m2)) ⇒ URI_Map(Map("ipvfuturelinklocal" -> Left((m1("ipv6address").left.get + "%" + m2("zoneid").left.get))))
       }
-      case URI_ZoneID(zoneID)       ⇒ URI_Map(Map("zoneID" -> Left(uridecoder.decode(zoneID))))
+      case URI_ZoneID(zoneID)       ⇒ URI_Map(Map("zoneid" -> Left(uridecoder.decode(zoneID))))
       case URI_IPv6Address(address) ⇒ URI_Map(Map("ipv6address" -> Left(address)))
       case URI_IPv6AddressZ(address, zone) ⇒
         val ipv6Address = ((eval(address): @unchecked) match { case URI_Map(m) ⇒ m("ipv6address").left.get })
-        val z = (eval(zone): @unchecked) match { case URI_Map(m) ⇒ m("zoneID").left.get }
-        URI_Map(Map("ipv6addressz" -> Left(ipv6Address + "%25" + z)))
+        val zoneid = (eval(zone): @unchecked) match { case URI_Map(m) ⇒ m("zoneid").left.get }
+        URI_Map(Map("ipv6addressz" -> Left(ipv6Address + "%" + zoneid)))
       case URI_IPv4Address(address) ⇒ URI_String(address)
       case URI_Query(rule) ⇒
         val params = traverseParameterList(rule, Nil)

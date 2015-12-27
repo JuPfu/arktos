@@ -184,7 +184,19 @@ class arktosSpec extends FlatSpec {
     testURI("""http://[2441:4880:28:3:204:76ff:f43f:6eb]:8080""")
   }
 
-  """The URI 'http://[fe80::bd0f:a8bc:6480:238b%2511]:8080'""" must "succeed" taggedAs (rfc3986) in {
-    testURI("""http://[fe80::bd0f:a8bc:6480:238b%2511]:8080""")
+  """The URI 'http://[fe80::bd0f:a8bc:6480:238b%11]:8080'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[fe80::bd0f:a8bc:6480:238b%11]:8080""")
+  }
+
+  """The URI 'http://[ff08::9abc%10]?a'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[ff08::9abc%10]?a""")
+  }
+
+  """The URI 'xmlrpc.beep://stateserver.example.com/NumberToName'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""xmlrpc.beep://stateserver.example.com/NumberToName""")
+  }
+
+  """The URI 'xmlrpc.beep://10.0.0.2:1026'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""xmlrpc.beep://10.0.0.2:1026""")
   }
 }

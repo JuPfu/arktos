@@ -45,7 +45,7 @@
 
 package org.arktos
 
-import org.parboiled2.{ ErrorFormatter, ParseError, ParserInput, _ }
+import org.parboiled2._
 
 import scala.util.{ Failure, Success }
 
@@ -122,7 +122,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def IP_literal = rule { '[' ~ (IPv6AddressZ | IPv6address | IPvFuture | IPvFutureLinkLokal) ~ ']' ~> URI_IP_Literal }
 
   // IPv6addrz = IPv6address "%25" ZoneID
-  def IPv6AddressZ = rule { IPv6address ~ "%25" ~ ZoneID ~> URI_IPv6AddressZ }
+  def IPv6AddressZ = rule { IPv6address ~ "%" ~ ZoneID ~> URI_IPv6AddressZ }
 
   // IPvFutureLinkLocal = "v1." IPv6address "+" ZoneID
   def IPvFutureLinkLokal = rule { "v1." ~ IPv6address ~ '+' ~ ZoneID ~> URI_IPvFutureLinkLocal }
