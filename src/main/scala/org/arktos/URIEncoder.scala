@@ -16,7 +16,7 @@
 
 package org.arktos
 
-import java.io.{ ByteArrayInputStream, ByteArrayOutputStream }
+import java.io.ByteArrayOutputStream
 
 /*
  * Utility class for URI encoding.
@@ -73,28 +73,38 @@ class URIEncoder {
 
     val bos = new ByteArrayOutputStream(1024)
 
-    def outChar(b: Byte) = {
+    def writeHexEncodedCharPart(b: Byte) = {
       import URIEncoder.hexmap
 
       bos.write('%')
-      bos.write(hexmap((b >>> 4) & 0x0F))
+      bos.write(hexmap((b >> 4) & 0x0F))
       bos.write(hexmap(b & 0x0F))
+    }
+
+    def writeHexRepresentationOfMultiByteChar(byte: Byte, count: Int): Unit = {
+      if (((byte << count) & 0x80) != 0) {
+        writeHexEncodedCharPart(iterator.next)
+        writeHexRepresentationOfMultiByteChar(byte, count + 1)
+      }
     }
 
     while (iterator.hasNext) {
       val byte = iterator.next
 
       if ((byte & 0x80) == 0) {
+        /* write single byte character encoded into two
+         * hexadecimal characters (first nibble and second nibble) to ByteArrayOutputStream
+         */
         bos.write(byte)
       } else {
-        outChar(byte)
-
-        var count = 1
-
-        while (((byte << count) & 0x80) != 0) {
-          count += 1
-          outChar(iterator.next)
-        }
+        /* write first byte of a multi-byte character encoded into two
+         * hexadecimal characters (first nibble and second nibble) to ByteArrayOutputStream
+         */
+        writeHexEncodedCharPart(byte)
+        /* recursively write all remaining bytes of a multi-byte character
+         * each byte encoded into two hexadecimal characters (first nibble and second nibble)
+         * to ByteArrayOutputStream */
+        writeHexRepresentationOfMultiByteChar(byte, 1)
       }
     }
     bos.toString("UTF-8")
