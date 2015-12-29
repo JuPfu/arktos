@@ -27,6 +27,8 @@ import scala.util.{Failure, Success}
 
 class arktosSpec extends FlatSpec {
 
+  val uriencoder = new URIEncoder()
+
   def testURI(input_uri: String, outcome: Boolean = true) = {
     val ms: Double = System.currentTimeMillis
     val parser = URIParser(input_uri)
@@ -42,14 +44,13 @@ class arktosSpec extends FlatSpec {
         val protocol = if ( uri.contains("protocol")) uri("protocol").left.get else ""
         val scheme = if ( protocol != "" ) protocol else if ( uri.contains("scheme") ) uri("scheme").left.get else ""
         val params = if ( uri.contains("params") ) uri("params").right.get else List()
-        val params_list = params.map({ case (k, null) => k; case (k, v) => k + "=" + URLEncoder.encode(v, "UTF-8") }).mkString("&")
+        val params_list = params.map({ case (k, null) => k; case (k, v) => k + "=" + uriencoder.encode(v, "UTF-8") }).mkString("&")
 
         val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":") + (if ( uri.contains("scheme_postfix") ) uri("scheme_postfix").left.get else "") +
           ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) => v }) +
           (if(uri.contains("path") ) uri("path").left.get else "") +
           (if (params_list.size > 0) "?" + params_list else "") +
           (if (uri.contains("hash") ) uri("hash").left.get else "")
-
         assert(input_uri == uri_synthesized)
         assert(outcome)
       case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
@@ -120,7 +121,7 @@ class arktosSpec extends FlatSpec {
   }
 
   """The URI 'http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky'""" must "succeed" taggedAs (rfc3986) in {
-    testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala%2Bodersky""", true)
+    testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky""", true)
   }
 
   """The URI 'http://[2001:0db8:85a3:08d3:1319:8a2e:0370:7344]:8080/'""" must "succeed" taggedAs (rfc3986) in {
@@ -199,4 +200,46 @@ class arktosSpec extends FlatSpec {
   """The URI 'xmlrpc.beep://10.0.0.2:1026'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""xmlrpc.beep://10.0.0.2:1026""")
   }
+
+  """The URI 'http://de.wikipedia.org/wiki/Uniform_Resource_Identifier'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://de.wikipedia.org/wiki/Uniform_Resource_Identifier""")
+  }
+
+  """The URI 'file:///C:/Users/Benutzer/Desktop/Uniform%20Resource%20Identifier.html'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""file:///C:/Users/Benutzer/Desktop/Uniform%20Resource%20Identifier.html""")
+  }
+
+  """The URI 'file:///etc/fstab'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""file:///etc/fstab""")
+  }
+
+  """The URI 'geo:48.33,14.122;u=22.5'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""geo:48.33,14.122;u=22.5""")
+  }
+
+  """The URI 'gopher://gopher.floodgap.com'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""gopher://gopher.floodgap.com""")
+  }
+
+  """The URI 'sip:911@pbx.mycompany.com'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""sip:911@pbx.mycompany.com""")
+  }
+
+  """The URI 'data:text/plain;charset=iso-8859-7,%be%fa%be'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""data:text/plain;charset=iso-8859-7,%be%fa%be""")
+  }
+
+  """The URI 'git://github.com/rails/rails.giturn:oasis:names:specification:docbook:dtd:xml:4.1.2'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""git://github.com/rails/rails.git""")
+  }
+
+  """The URI 'crid://broadcaster.com/movies/BestActionMovieEver'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""crid://broadcaster.com/movies/BestActionMovieEver""")
+  }
+
+  """The URI 'https://unicode.com/encoding/char?Unicorn=%F0%9F%A6%84'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""https://unicode.com/encoding/char?Unicorn=%F0%9F%A6%84""")
+  }
+
+
 }

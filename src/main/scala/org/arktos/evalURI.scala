@@ -173,7 +173,7 @@ class evalURI {
       case URI_IPv6Address(address) ⇒ URI_Map(Map("ipv6address" -> Left(address)))
       case URI_IPv6AddressZ(address, zone) ⇒
         val ipv6Address = ((eval(address): @unchecked) match { case URI_Map(m) ⇒ m("ipv6address").left.get })
-        val zoneid = (eval(zone): @unchecked) match { case URI_String(z) ⇒ z}
+        val zoneid = (eval(zone): @unchecked) match { case URI_String(z) ⇒ z }
         URI_Map(Map("ipv6addressz" -> Left(ipv6Address + "%" + zoneid)) ++ Map("zoneid" -> Left(zoneid)))
       case URI_IPv4Address(address) ⇒ URI_String(address)
       case URI_Query(rule) ⇒

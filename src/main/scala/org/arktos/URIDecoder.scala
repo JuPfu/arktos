@@ -35,7 +35,7 @@ object URIDecoder {
 
 class URIDecoder {
 
-  def decode(s: String): String = {
+  def decode(s: String, charset: String = "UTF-8"): String = {
 
     def PCTEncodedOctetToNibble(c: Char) = if (c <= '9') c - '0' else if (c <= 'F') c - '7' else c - 'W'
 
@@ -51,6 +51,6 @@ class URIDecoder {
         bos.write(PCTEncodedOctetToNibble(iterator.next()) << 4 | PCTEncodedOctetToNibble(iterator.next()))
       }
     }
-    bos.toString("UTF-8")
+    bos.toString(charset)
   }
 }
