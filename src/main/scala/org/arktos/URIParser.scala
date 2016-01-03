@@ -45,9 +45,10 @@
 
 package org.arktos
 
+import org.parboiled2.Parser.DeliveryScheme
 import org.parboiled2._
 
-import scala.util.{ Failure, Success }
+import scala.util.{ Try, Failure, Success }
 
 class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
@@ -286,6 +287,14 @@ object URIParser {
   case class Error(msg: String) extends URI_AST
 
   def apply(input: ParserInput) = {
-    new URIParser(input)
+
+    val parser = new URIParser(input)
+    val result = parser.URI_reference.run()
+
+    result match {
+      case Success(x)             ⇒ Success((new evalURI().eval(result.get): @unchecked) match { case URI_Map(x) ⇒ x })
+      case Failure(e: ParseError) ⇒ Failure(new RuntimeException(parser.formatError(result.failed.get.asInstanceOf[org.parboiled2.ParseError], new ErrorFormatter())))
+      case Failure(e)             ⇒ Failure(new RuntimeException("Unexpected error during parsing run: " + result.failed.get))
+    }
   }
 }

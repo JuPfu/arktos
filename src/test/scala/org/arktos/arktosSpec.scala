@@ -15,50 +15,45 @@
 */
 package org.arktos
 
-
-import java.net.URLEncoder
-
-import org.arktos.URIParser.URI_Map
-import org.parboiled2.{ErrorFormatter, ParseError}
 import org.scalatest.FlatSpec
-
-import scala.util.{Failure, Success}
-
 
 class arktosSpec extends FlatSpec {
 
   val uriencoder = new URIEncoder()
 
-  def testURI(input_uri: String, outcome: Boolean = true) = {
-    val ms: Double = System.currentTimeMillis
-    val parser = URIParser(input_uri)
-    val res = parser.URI_reference.run() match {
-      case Success(x) ⇒
-        val uri = ((new evalURI).eval(x): @unchecked) match {
-          case URI_Map(x) ⇒ x
-        }
+  def testURI(input: String, outcome: Boolean = true) = {
 
-        val me: Double = System.currentTimeMillis - ms
-        System.err.println("Used time " + (me / 1000.0))
+    val parsed_uri =  URIParser(input)
 
-        val protocol = if ( uri.contains("protocol")) uri("protocol").left.get else ""
-        val scheme = if ( protocol != "" ) protocol else if ( uri.contains("scheme") ) uri("scheme").left.get else ""
-        val params = if ( uri.contains("params") ) uri("params").right.get else List()
-        val params_list = params.map({ case (k, null) => k; case (k, v) => k + "=" + uriencoder.encode(v, "UTF-8") }).mkString("&")
+    if ( parsed_uri.isFailure ) {
+      System.err.println("Input '" + input + "': " + parsed_uri.failed.get)
+    }
+    else {
+      val uri = parsed_uri.get
 
-        val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":") + (if ( uri.contains("scheme_postfix") ) uri("scheme_postfix").left.get else "") +
-          ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) => v }) +
-          (if(uri.contains("path") ) uri("path").left.get else "") +
-          (if (params_list.size > 0) "?" + params_list else "") +
-          (if (uri.contains("hash") ) uri("hash").left.get else "")
-        assert(input_uri == uri_synthesized)
-        assert(outcome)
-      case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = true)))
-        assert(!outcome, e)
-      case Failure(e) ⇒ System.err.println("Input '" + input_uri + "': Unexpected error during parsing run: " + e)
-        assert(!outcome, e)
+      // synthesize URI from parsed data
+
+      // get protocol
+      val protocol = uri.getOrElse("protocol", Left("")).left.get
+      // if protocol is unknown ("") get scheme
+      val scheme = if ( protocol != "" ) protocol else uri.getOrElse("scheme", Left("")).left.get
+      // get parameters
+      val params = uri.getOrElse("params", Right(List())).right.get
+      // rebuild parameter list
+      val params_list = params.map({ case (k, null) => k; case (k, v) => k + "=" + uriencoder.encode(v, "UTF-8") }).mkString("&")
+      // assemble original uri from
+      val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":") + (if ( uri.contains("scheme_postfix") ) uri("scheme_postfix").left.get else "") +
+        ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) => v }) +
+        uri.getOrElse("path", Left("")).left.get +
+        (if (params_list.nonEmpty) "?" + params_list else "") +
+      uri.getOrElse("hash", Left("")).left.get
+
+      System.err.println("SYNTHESIZED="+uri_synthesized)
+      assert(input == uri_synthesized)
+      assert(outcome)
     }
   }
+
 
   """The URI 'http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content'""" must "succeed" taggedAs (rfc3986) in {
     testURI( """http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content""")

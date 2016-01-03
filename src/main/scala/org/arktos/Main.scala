@@ -16,12 +16,7 @@
 
 package org.arktos
 
-import org.parboiled2.{ ErrorFormatter, ParseError, ParserInput }
-
-import org.arktos.URIParser.URI_Map
 import org.arktos.GetCmdLineArgs._
-
-import scala.util.{ Success, Failure }
 
 object Main extends App {
 
@@ -36,28 +31,36 @@ object Main extends App {
     sys.exit(2)
   }
 
-  val input_uri = cmdLineArgs.get.input_uri
+  val input = cmdLineArgs.get.input_uri
   val validate = cmdLineArgs.get.validate
   val verbose = cmdLineArgs.get.verbose
 
   if (verbose) {
-    System.err.println((if (!validate) "Analyse: " else "Validate: ") + input_uri)
+    System.err.println((if (!validate) "Analyse: " else "Validate: ") + input)
   }
 
-  val ms: Double = System.currentTimeMillis
+  val parsedURI = URIParser(input)
 
-  lazy val input: ParserInput = input_uri
+  if (parsedURI.isFailure) {
+    System.err.println("Input '" + input + "': " + parsedURI.failed.get)
+  } else {
+    System.out.println("URI=" + parsedURI)
 
-  val parser = new URIParser(input_uri)
+    System.out.println("Result->" + parsedURI.get.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v })
 
-  parser.URI_reference.run() match {
-    case Success(x) ⇒
-      val m = ((new evalURI).eval(x): @unchecked) match { case URI_Map(x) ⇒ x }
-      System.out.println("RESULT->" + m.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v })
-      val me: Double = System.currentTimeMillis - ms
-      System.err.println("Used time " + (me / 1000.0))
-    case Failure(e: ParseError) ⇒ System.err.println("Input '" + input_uri + "': " + parser.formatError(e, new ErrorFormatter(showTraces = false)))
-    case Failure(e)             ⇒ System.err.println("Input '" + input_uri + "': Unexpected error during parsing run: " + e)
+    val uri = parsedURI.get
+
+    System.out.println("Contains 'scheme' is " + uri.contains("scheme"))
+    System.out.println("Get value for 'scheme'=" + uri.getOrElse("scheme", Left("HTTPS")).left.get)
+    System.out.println("Parameter to array=" + uri.toParArray)
+    System.out.println("Parameter array(1) = " + uri.toParArray(1)._2.left.get)
+    System.out.println("Drop -=" + (uri - "scheme"))
+    System.out.println("Add +=" + uri + ("scheme" -> Left("https")))
+
+    System.out.println("Concatenation of uris = " + (uri ++ Map("jp" -> Right(List(("a", "b"))))))
+
+    val params = uri("params").right.getOrElse(List(("1", "a"), ("5", "e"), ("ß", null), ("2", "b")))
+    System.out.println("List of sorted Params =" + params.sorted)
   }
 }
 

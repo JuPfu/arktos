@@ -18,6 +18,8 @@ package org.arktos
 
 import java.io.ByteArrayOutputStream
 
+import scala.annotation.tailrec
+
 /*
  * Utility class for URI encoding.
  *
@@ -26,7 +28,7 @@ import java.io.ByteArrayOutputStream
  */
 
 /*
-excerptfrom http://www.rfc-base.org/txt/rfc-3986.txt
+excerpt from http://www.rfc-base.org/txt/rfc-3986.txt
 
 2.4 When to Encode or Decode
 
@@ -81,6 +83,7 @@ class URIEncoder {
       bos.write(hexmap(b & 0x0F))
     }
 
+    @tailrec
     def writeHexRepresentationOfMultiByteChar(byte: Byte, count: Int): Unit = {
       if (((byte << count) & 0x80) != 0) {
         writeHexEncodedCharPart(iterator.next)
