@@ -41,14 +41,15 @@ class arktosSpec extends FlatSpec {
       val params = uri.getOrElse("params", Right(List())).right.get
       // rebuild parameter list
       val params_list = params.map({ case (k, null) => k; case (k, v) => k + "=" + uriencoder.encode(v, "UTF-8") }).mkString("&")
-      // assemble original uri from
+      // assemble original uri
       val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":") + (if ( uri.contains("scheme_postfix") ) uri("scheme_postfix").left.get else "") +
         ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) => v }) +
         uri.getOrElse("path", Left("")).left.get +
         (if (params_list.nonEmpty) "?" + params_list else "") +
-      uri.getOrElse("hash", Left("")).left.get
+        uri.getOrElse("hash", Left("")).left.get
 
       System.err.println("SYNTHESIZED="+uri_synthesized)
+
       assert(input == uri_synthesized)
       assert(outcome)
     }
@@ -168,6 +169,38 @@ class arktosSpec extends FlatSpec {
     testURI("""http://[2001:0:3238:DFE1:63::FEFB]/example.com/in?out?test=off#link""")
   }
 
+  """The URI 'http://[2001:db8:0:0:1:0:0:1]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:db8:0:0:1:0:0:1]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:0db8:0:0:1:0:0:1]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:0db8:0:0:1:0:0:1]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:db8::1:0:0:1]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:db8::1:0:0:1]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:db8::0:1:0:0:1]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:db8::0:1:0:0:1]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:0db8::1:0:0:1]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:0db8::1:0:0:1]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:db8:0:0:1::1]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:db8:0:0:1::1]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:db8:0000:0:1::1]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:db8:0000:0:1::1]/example.com/in?out?test=off#link""")
+  }
+
+  """The URI 'http://[2001:DB8:0:0:1::1]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
+    testURI("""http://[2001:DB8:0:0:1::1]/example.com/in?out?test=off#link""")
+  }
+
   """The URI 'http://[::]/'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""http://[::]/""")
   }
@@ -235,6 +268,4 @@ class arktosSpec extends FlatSpec {
   """The URI 'https://unicode.com/encoding/char?Unicorn=%F0%9F%A6%84'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""https://unicode.com/encoding/char?Unicorn=%F0%9F%A6%84""")
   }
-
-
 }

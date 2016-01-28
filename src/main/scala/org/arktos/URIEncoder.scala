@@ -69,9 +69,7 @@ class URIEncoder {
 
   def encode(s: String, charset: String = "UTF-8"): String = {
 
-    val b = s.getBytes(charset)
-
-    val iterator: Iterator[Byte] = b.iterator
+    val iterator: Iterator[Byte] = s.getBytes(charset).iterator
 
     val bos = new ByteArrayOutputStream(1024)
 

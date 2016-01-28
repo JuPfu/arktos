@@ -51,11 +51,11 @@ object Main extends App {
     val uri = parsedURI.get
 
     System.out.println("Contains 'scheme' is " + uri.contains("scheme"))
-    System.out.println("Get value for 'scheme'=" + uri.getOrElse("scheme", Left("HTTPS")).left.get)
-    System.out.println("Parameter to array=" + uri.toParArray)
+    System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", "https"))
+    System.out.println("Parameter to array = " + uri.toParArray)
     System.out.println("Parameter array(1) = " + uri.toParArray(1)._2.left.get)
-    System.out.println("Drop -=" + (uri - "scheme"))
-    System.out.println("Add +=" + uri + ("scheme" -> Left("https")))
+    System.out.println("Drop key and value '-' = " + (uri - "scheme"))
+    System.out.println("Add key and value '+' = " + uri + ("scheme" -> Left("https")))
 
     System.out.println("Concatenation of uris = " + (uri ++ Map("jp" -> Right(List(("a", "b"))))))
 

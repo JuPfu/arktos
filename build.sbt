@@ -8,7 +8,7 @@ val commonSettings = Seq(
   organization := "com.github.jupfu",
   homepage := Some(new URL("http://github.com/JuPfu/arktos")),
   description := "URI Parser",
-  startYear := Some(2014),
+  startYear := Some(2015),
   licenses := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   javacOptions ++= Seq(
     "-encoding", "UTF-8",
