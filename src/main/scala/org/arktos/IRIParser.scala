@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2015 - 2016 Juergen Pfundt
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.arktos
 
 import org.arktos.URIParser._
@@ -6,9 +22,6 @@ import org.parboiled2.CharPredicate._
 
 import scala.util.{ Failure, Success }
 
-/**
- * Created by jp on 31.01.16.
- */
 class IRIParser(input: ParserInput) extends URIParser(input: ParserInput) {
 
   import IRIParser._
@@ -46,7 +59,7 @@ class IRIParser(input: ParserInput) extends URIParser(input: ParserInput) {
   //segment-nz-nc = 1*( unreserved / pct-encoded / sub-delims / "@" ) ; non-zero-length segment without any ':' ":"
   override def segment_nz_nc = rule { (unreserved | pct_encoded | sub_delims | '@' | isHighSurrogate ~ isLowSurrogate).+ }
 
-  override def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' | isHighSurrogate ~ isLowSurrogate /* | supplement */ }
+  override def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' | isHighSurrogate ~ isLowSurrogate }
 }
 
 object IRIParser {
