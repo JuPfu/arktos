@@ -154,8 +154,8 @@ class evalURI {
         val hostname = eval(rule)
         (rule: @unchecked) match {
           case URI_IP_Literal(literal)      ⇒ (hostname: @unchecked) match { case URI_Map(m) ⇒ URI_Map(m ++ Map("hostname" -> m("ipliteral"))) }
-          case URI_IPv4Address(ipv4address) ⇒ (hostname: @unchecked) match { case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s))) }
-          case URI_Reg_Name(regname)        ⇒ (hostname: @unchecked) match { case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s))) }
+          case URI_IPv4Address(ipv4address) ⇒ (hostname: @unchecked) match { case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s)) ++ Map("ipv4address" -> Left(s))) }
+          case URI_Reg_Name(regname)        ⇒ (hostname: @unchecked) match { case URI_String(s) ⇒ URI_Map(Map("hostname" -> Left(s)) ++ Map("regname" -> Left(s))) }
         }
       case URI_IP_Literal(ipLiteral) ⇒
         val literal = eval(ipLiteral)

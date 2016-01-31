@@ -45,10 +45,9 @@
 
 package org.arktos
 
-import org.parboiled2.Parser.DeliveryScheme
 import org.parboiled2._
 
-import scala.util.{ Try, Failure, Success }
+import scala.util.{ Failure, Success }
 
 class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
@@ -231,7 +230,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def queryVariable = rule { capture((qchar | '/' | '?').*) ~> URI_QueryVariable }
   def queryValue = rule { capture((qchar | '/' | '?').*) ~> URI_QueryValue }
   def queryToken = rule { capture((qchar | '/' | '?').*) ~> URI_QueryToken }
-  def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' /* | supplement */ }
+  def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' }
 
   // fragment      = *( pchar / "/" / "?" )
   def fragment = rule { atomic(capture((pchar | '/' | '?').*)) ~> URI_Fragment }

@@ -52,6 +52,7 @@ is used as an example to show the parsed components in the example column.
 | password | the password part of the userinfo subcomponent | *secret* |
 | userinfo | the complete userinfo subcomponent consisting of 'user'-part and 'password'-part separated by a colon | *member:secret* |
 | hostname | the name of the host | *www.ietf.org* |
+| ipliteral | the ip-address | |
 | port | the port number | *123* |
 | host | host and port separated by a colon | *www.ietf.org:123* |
 | authority | userinfo and host separated by a '@' | *member:secret@www.ietf.org:123* |

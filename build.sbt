@@ -38,6 +38,7 @@ test in assembly := {}
 /////////////////////// DEPENDENCIES /////////////////////////
 
 val parboiled2       = "org.parboiled"   %% "parboiled"        % "2.1.0"
+//val shapeless        = "com.chuusai" %% "shapeless" % "2.2.5"
 val scopt            = "com.github.scopt" %% "scopt" % "3.3.0"
 val scalaTest        = "org.scalatest"   % "scalatest_2.11"    % "2.2.4" % "test"
 

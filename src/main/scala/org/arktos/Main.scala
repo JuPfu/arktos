@@ -50,8 +50,10 @@ object Main extends App {
 
     val uri = parsedURI.get
 
+    System.out.println("Get keys " + uri.keys)
+    System.out.println("Get values " + uri.values)
     System.out.println("Contains 'scheme' is " + uri.contains("scheme"))
-    System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", "https"))
+    System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", Left("https")))
     System.out.println("Parameter to array = " + uri.toParArray)
     System.out.println("Parameter array(1) = " + uri.toParArray(1)._2.left.get)
     System.out.println("Drop key and value '-' = " + (uri - "scheme"))
@@ -59,8 +61,11 @@ object Main extends App {
 
     System.out.println("Concatenation of uris = " + (uri ++ Map("jp" -> Right(List(("a", "b"))))))
 
-    val params = uri("params").right.getOrElse(List(("1", "a"), ("5", "e"), ("ß", null), ("2", "b")))
-    System.out.println("List of sorted Params =" + params.sorted)
+    val params = uri.getOrElse("params", Right(List(("1", "a"), ("5", "e"), ("ß", null), ("2", "b"))))
+    System.out.println("List of sorted Params =" + params.right.get.sorted)
+
+    val s = uri.getOrElse("params", Right(List()))
+    System.out.println("Params=" + s)
   }
 }
 

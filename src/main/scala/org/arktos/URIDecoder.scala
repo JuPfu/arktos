@@ -44,10 +44,17 @@ class URIDecoder {
     val iterator = s.iterator
 
     while (iterator.hasNext) {
-      val c = iterator.next()
-      if (c != '%')
-        bos.write(c)
-      else {
+      val c: Char = iterator.next()
+
+      if (c != '%') {
+        val it: Iterator[Byte] = c.toString.getBytes(charset).iterator
+        while (it.hasNext) bos.write(it.next())
+
+        if (c.isSurrogate) {
+          val it: Iterator[Byte] = c.toString.getBytes(charset).iterator
+          while (it.hasNext) bos.write(it.next())
+        }
+      } else {
         bos.write(PCTEncodedOctetToNibble(iterator.next()) << 4 | PCTEncodedOctetToNibble(iterator.next()))
       }
     }
