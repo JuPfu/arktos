@@ -33,7 +33,7 @@ class IRIParser(input: ParserInput) extends URIParser(input: ParserInput) {
   // unreserved     = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
   override val unreserved = AlphaNum ++ '-' ++ '.' ++ '_' ++ '~' ++ ucschar
 
-  def private_supplement = rule { `private` ~ !(str("\\U000FFFFE") | str("\\U000FFFFF") | str("\\U00010FFE") | str("\\U00010FFF")) ~ isHighSurrogate ~ isLowSurrogate }
+  def private_supplement = rule { `private` | !(str("\\U000FFFFE") | str("\\U000FFFFF") | str("\\U00010FFE") | str("\\U00010FFF")) ~ isHighSurrogate ~ isLowSurrogate }
 
   def ucschar_supplement = rule {
     !(str("\\U0001FFFE") | str("\\U0001FFFF") |
