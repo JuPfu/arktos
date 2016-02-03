@@ -51,7 +51,7 @@ class URIDecoder {
         while (it.hasNext) bos.write(it.next())
 
         if (c.isSurrogate) {
-          val it: Iterator[Byte] = c.toString.getBytes(charset).iterator
+          val it: Iterator[Byte] = iterator.next().toString.getBytes(charset).iterator
           while (it.hasNext) bos.write(it.next())
         }
       } else {

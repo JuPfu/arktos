@@ -65,7 +65,7 @@ object Main extends App {
     System.out.println("List of sorted Params =" + params.right.get.sorted)
 
     val s = uri.getOrElse("params", Right(List()))
-    System.out.println("Params=" + s)
+    System.out.println("Params=" + s.right.get)
   }
 }
 

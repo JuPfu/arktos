@@ -92,7 +92,14 @@ class URIEncoder {
     while (iterator.hasNext) {
       val byte = iterator.next
 
-      if ((byte & 0x80) == 0) {
+      if ((byte & 0x80) == 0 &&
+        ((byte >= '0' && byte <= '9') ||
+          (byte >= 'A' && byte <= 'Z') ||
+          (byte >= 'a' && byte <= 'z') ||
+          byte == '-' ||
+          byte == '.' ||
+          byte == '_' ||
+          byte == '~')) {
         /* write single byte character encoded into two
          * hexadecimal characters (first nibble and second nibble) to ByteArrayOutputStream
          */

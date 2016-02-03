@@ -19,3 +19,4 @@ package org.arktos
 import org.scalatest.Tag
 
 object rfc3986 extends Tag("org.arktos.tags.rfc3986")
+object rfc3987 extends Tag("org.arktos.tags.rfc3987")
