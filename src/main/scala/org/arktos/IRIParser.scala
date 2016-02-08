@@ -14,6 +14,40 @@
  * limitations under the License.
  */
 
+/* This Parboiled2 grammar implements the
+
+   Uniform Resource Identifier (URI): Generic Syntax
+
+   as described in
+
+   http://tools.ietf.org/html/rfc3987
+
+   Network Working Group                                          M. Duerst
+   Request for Comments: 3987                                           W3C
+   Category: Standards Track                                    M. Suignard
+                                                      Microsoft Corporation
+                                                               January 2005
+
+   IRIs are defined similarly to URIs in [RFC3986], but the class of
+   unreserved characters is extended by adding the characters of the UCS
+   (Universal Character Set, [ISO10646]) beyond U+007F, subject to the
+   limitations given in the syntax rules below and in section 6.1.
+
+   Otherwise, the syntax and use of components and reserved characters
+   is the same as that in [RFC3986].  All the operations defined in
+   [RFC3986], such as the resolution of relative references, can be
+   applied to IRIs by IRI-processing software in exactly the same way as
+   they are for URIs by URI-processing software.
+
+   Characters outside the US-ASCII repertoire are not reserved and
+   therefore MUST NOT be used for syntactical purposes, such as to
+   delimit components in newly defined schemes.  For example, U+00A2,
+   CENT SIGN, is not allowed as a delimiter in IRIs, because it is in
+   the 'iunreserved' category. This is similar to the fact that it is
+   not possible to use '-' as a delimiter in URIs, because it is in the
+   'unreserved' category.
+ */
+
 package org.arktos
 
 import org.arktos.URIParser._
@@ -26,14 +60,15 @@ class IRIParser(input: ParserInput) extends URIParser(input: ParserInput) {
 
   import IRIParser._
 
-  val ucschar = CharPredicate('\u00A0' to '\uD7FF', '\uF900' to '\uFDCF', '\uFDF0' to '\uFFEF')
   //private       = %xE000-F8FF / %xF0000-FFFFD / %x100000-10FFFD
   val `private` = CharPredicate('\uE000' to '\uF8FF')
 
+  def private_supplement = rule { `private` | !(str("\\U000FFFFE") | str("\\U000FFFFF") | str("\\U00010FFE") | str("\\U00010FFF")) ~ isHighSurrogate ~ isLowSurrogate }
+
+  val ucschar = CharPredicate('\u00A0' to '\uD7FF', '\uF900' to '\uFDCF', '\uFDF0' to '\uFFEF')
+
   // unreserved     = ALPHA / DIGIT / "-" / "." / "_" / "~" / ucschar
   override val unreserved = AlphaNum ++ '-' ++ '.' ++ '_' ++ '~' ++ ucschar
-
-  def private_supplement = rule { `private` | !(str("\\U000FFFFE") | str("\\U000FFFFF") | str("\\U00010FFE") | str("\\U00010FFF")) ~ isHighSurrogate ~ isLowSurrogate }
 
   def ucschar_supplement = rule {
     !(str("\\U0001FFFE") | str("\\U0001FFFF") |

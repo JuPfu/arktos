@@ -61,11 +61,8 @@ object Main extends App {
 
     System.out.println("Concatenation of uris = " + (uri ++ Map("jp" -> Right(List(("a", "b"))))))
 
-    val params = uri.getOrElse("params", Right(List(("1", "a"), ("5", "e"), ("ß", null), ("2", "b"))))
-    System.out.println("List of sorted Params =" + params.right.get.sorted)
-
-    val s = uri.getOrElse("params", Right(List()))
-    System.out.println("Params=" + s.right.get)
+    val params = uri.getOrElse("params", Right(List())).right.get
+    System.out.println("List of sorted Params =" + params.sorted)
   }
 }
 
