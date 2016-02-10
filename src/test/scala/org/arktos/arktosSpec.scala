@@ -23,12 +23,11 @@ class arktosSpec extends FlatSpec {
 
   def testURI(input: String, outcome: Boolean = true) = {
 
-    val parsed_uri =  URIParser(input)
+    val parsed_uri = URIParser(input)
 
-    if ( parsed_uri.isFailure ) {
+    if (parsed_uri.isFailure) {
       System.err.println("Input '" + input + "': " + parsed_uri.failed.get)
-    }
-    else {
+    } else {
       val uri = parsed_uri.get
 
       // synthesize URI from parsed data
@@ -36,32 +35,29 @@ class arktosSpec extends FlatSpec {
       // get protocol
       val protocol = uri.getOrElse("protocol", Left("")).left.get
       // if protocol is unknown ("") get scheme
-      val scheme = if ( protocol != "" ) protocol else uri.getOrElse("scheme", Left("")).left.get
+      val scheme = if (protocol != "") protocol else uri.getOrElse("scheme", Left("")).left.get
       // get parameters
       val params = uri.getOrElse("params", Right(List())).right.get
       // rebuild parameter list
-      val params_list = params.map({ case (k, null) => k; case (k, v) => k + "=" + uriencoder.encode(v, "UTF-8") }).mkString("&")
+      val params_list = params.map({ case (k, null) ⇒ k; case (k, v) ⇒ k + "=" + uriencoder.encode(v, "UTF-8") }).mkString("&")
       // assemble original uri
-      val uri_synthesized = scheme + (if ( scheme.length > 0 ) ":") + (if ( uri.contains("scheme_postfix") ) uri("scheme_postfix").left.get else "") +
-        ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) => v }) +
+      val uri_synthesized = scheme + (if (scheme.length > 0) ":") + (if (uri.contains("scheme_postfix")) uri("scheme_postfix").left.get else "") +
+        ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) ⇒ v }) +
         uri.getOrElse("path", Left("")).left.get +
         (if (params_list.nonEmpty) "?" + params_list else "") +
         uri.getOrElse("hash", Left("")).left.get
-
-      System.err.println("SYNTHESIZED="+uri_synthesized)
 
       assert(input == uri_synthesized)
       assert(outcome)
     }
   }
 
-
   """The URI 'http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content'""" must "succeed" taggedAs (rfc3986) in {
-    testURI( """http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content""")
+    testURI("""http://jp:secret@www.ietf.org/rfc/rfc2396.txt?p=1&p=URI#content""")
   }
 
   """The URI 'urn:isbn:0451450523'""" must "succeed" taggedAs (rfc3986) in {
-    testURI( """urn:isbn:0451450523""")
+    testURI("""urn:isbn:0451450523""")
   }
 
   """The URI 'urn:lex:eu:council:directive:2010-03-09;2010-19-UE'""" must "succeed" taggedAs (rfc3986) in {
@@ -151,7 +147,6 @@ class arktosSpec extends FlatSpec {
   """The URI 'http://[2001:cdba::3257:9652]/'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""http://[2001:cdba::3257:9652]/""")
   }
-
 
   """The URI 'http://[2001:0000:3238:DFE1:0063:0000:0000:FEFB]/example.com/in?out?test=off#link'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""http://[2001:0000:3238:DFE1:0063:0000:0000:FEFB]/example.com/in?out?test=off#link""")

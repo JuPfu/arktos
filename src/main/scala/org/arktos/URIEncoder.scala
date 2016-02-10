@@ -100,18 +100,18 @@ class URIEncoder {
           byte == '.' ||
           byte == '_' ||
           byte == '~')) {
-        /* write single byte character encoded into two
-         * hexadecimal characters (first nibble and second nibble) to ByteArrayOutputStream
+        /* write single byte character encoded into two hexadecimal characters
+         * (first nibble and second nibble) to ByteArrayOutputStream
          */
         bos.write(byte)
       } else {
-        /* write first byte of a multi-byte character encoded into two
-         * hexadecimal characters (first nibble and second nibble) to ByteArrayOutputStream
+        /* write first byte of a multi-byte character encoded into two hexadecimal characters
+         * (first nibble and second nibble) to ByteArrayOutputStream
          */
         writeHexEncodedCharPart(byte)
         /* recursively write all remaining bytes of a multi-byte character
-         * each byte encoded into two hexadecimal characters (first nibble and second nibble)
-         * to ByteArrayOutputStream */
+         * each byte encoded into two hexadecimal characters
+         * (first nibble and second nibble) to ByteArrayOutputStream */
         writeHexRepresentationOfMultiByteChar(byte, 1)
       }
     }

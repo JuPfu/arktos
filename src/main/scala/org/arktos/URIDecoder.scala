@@ -16,7 +16,8 @@
 
 package org.arktos
 
-import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
 
 /*
  * Utility class for URI decoding.
@@ -37,9 +38,9 @@ class URIDecoder {
 
   def decode(s: String, charset: String = "UTF-8"): String = {
 
-    def PCTEncodedOctetToNibble(c: Char) = if (c <= '9') c - '0' else if (c <= 'F') c - '7' else c - 'W'
+    def PCTEncodedOctetToNibble(c: Char) = if (c <= '9') (c - '0') else if (c <= 'F') (c - '7') else (c - 'W')
 
-    val bos = new ByteArrayOutputStream(1024)
+    val byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(s.length << 1)
 
     val iterator = s.iterator
 
@@ -47,17 +48,20 @@ class URIDecoder {
       val c: Char = iterator.next()
 
       if (c != '%') {
-        val it: Iterator[Byte] = c.toString.getBytes(charset).iterator
-        while (it.hasNext) bos.write(it.next())
-
-        if (c.isSurrogate) {
-          val it: Iterator[Byte] = iterator.next().toString.getBytes(charset).iterator
-          while (it.hasNext) bos.write(it.next())
+        if (!c.isSurrogate) {
+          val it: Iterator[Byte] = c.toString.getBytes(charset).iterator
+          while (it.hasNext) byteBuffer.put(it.next())
+        }
+        else {
+          val it: Iterator[Byte] = (c.toString + iterator.next().toString).getBytes(charset).iterator
+          while (it.hasNext) byteBuffer.put(it.next())
         }
       } else {
-        bos.write(PCTEncodedOctetToNibble(iterator.next()) << 4 | PCTEncodedOctetToNibble(iterator.next()))
+        byteBuffer.put(((PCTEncodedOctetToNibble(iterator.next()) << 4) | PCTEncodedOctetToNibble(iterator.next())).toByte)
       }
     }
-    bos.toString(charset)
+    byteBuffer.flip()
+
+    StandardCharsets.UTF_8.decode(byteBuffer).toString
   }
 }
