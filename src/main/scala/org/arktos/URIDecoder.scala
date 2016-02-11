@@ -40,7 +40,7 @@ class URIDecoder {
 
     def PCTEncodedOctetToNibble(c: Char) = if (c <= '9') (c - '0') else if (c <= 'F') (c - '7') else (c - 'W')
 
-    val byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(s.length << 1)
+    val byteBuffer: ByteBuffer = ByteBuffer.allocateDirect(s.length << 2)
 
     val iterator = s.iterator
 
@@ -48,14 +48,8 @@ class URIDecoder {
       val c: Char = iterator.next()
 
       if (c != '%') {
-        if (!c.isSurrogate) {
-          val it: Iterator[Byte] = c.toString.getBytes(charset).iterator
-          while (it.hasNext) byteBuffer.put(it.next())
-        }
-        else {
-          val it: Iterator[Byte] = (c.toString + iterator.next().toString).getBytes(charset).iterator
-          while (it.hasNext) byteBuffer.put(it.next())
-        }
+        if (!c.isSurrogate) byteBuffer.put(c.toString.getBytes)
+        else byteBuffer.put((c.toString + iterator.next().toString).getBytes)
       } else {
         byteBuffer.put(((PCTEncodedOctetToNibble(iterator.next()) << 4) | PCTEncodedOctetToNibble(iterator.next())).toByte)
       }
