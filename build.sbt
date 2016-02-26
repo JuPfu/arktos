@@ -34,13 +34,10 @@ val formattingSettings = scalariformSettings ++ Seq(
     .setPreference(PreserveDanglingCloseParenthesis, true))
 
 test in assembly := {}
-
-
 	
 /////////////////////// DEPENDENCIES /////////////////////////
 
-val parboiled2       = "org.parboiled"   %% "parboiled"        % "2.1.0"
-//val shapeless        = "com.chuusai" %% "shapeless" % "2.2.5"
+val parboiled2       = "org.parboiled"   %% "parboiled"        % "2.1.1"
 val scopt            = "com.github.scopt" %% "scopt" % "3.3.0"
 val scalaTest        = "org.scalatest"   % "scalatest_2.11"    % "2.2.6" % "test"
 
@@ -50,6 +47,9 @@ resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repos
 
 resolvers += Resolver.sonatypeRepo("public")
 
+resolvers += Resolver.sonatypeRepo("releases")
+
+resolvers += Resolver.sonatypeRepo("snapshots")
 
 scalariformSettings
 
