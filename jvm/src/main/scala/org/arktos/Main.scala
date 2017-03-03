@@ -46,23 +46,39 @@ object Main extends App {
   } else {
     System.out.println("URI=" + parsedURI)
 
-    System.out.println("Result->" + parsedURI.get.mapValues { case Left(v) ⇒ v; case (Right(v)) ⇒ v })
-
     val uri = parsedURI.get
 
     System.out.println("Get keys " + uri.keys)
     System.out.println("Get values " + uri.values)
+    val uscheme = uri("scheme")
+
+    val usum = uscheme + "::" + uri("authority")
+    System.out.println("usum = "+ usum)
+    System.out.println("scheme = "+ uscheme)
     System.out.println("Contains 'scheme' is " + uri.contains("scheme"))
-    System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", Left("https")))
+    System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", "https"))
     System.out.println("Parameter to array = " + uri.toParArray)
-    System.out.println("Parameter array(1) = " + uri.toParArray(1)._2.left.get)
-    System.out.println("Drop key and value '-' = " + (uri - "scheme"))
-    System.out.println("Add key and value '+' = " + uri + ("scheme" -> Left("https")))
 
-    System.out.println("Concatenation of uris = " + (uri ++ Map("jp" -> Right(List(("a", "b"))))))
+    val uprot = uri("protocol")
+    System.out.println("protocol = "+ uprot)
+    val utipar = uri.toParArray(1)._2
+    System.out.println("Parameter array(1) = " + utipar)
+    val udrop = uri - "scheme"
+    System.out.println("Drop key and value '-' = " + udrop)
+    val uadd = uri + ("scheme" → "https")
+    System.out.println("Add key and value '+' = " + uadd)
 
-    val params = uri.getOrElse("params", Right(List())).right.get
+    val uconcat = uri ++ Map("jp" → List(("a", "b")))
+    System.out.println("Concatenation of uris = " + uconcat)
+
+    val params: List[(String, String)] = uri("params").asInstanceOf[List[(String, String)]]
+
+
     System.out.println("List of sorted Params =" + params.sorted)
+
+    //val first = params.head
+
+    //System.out.println("First = "+ first)
   }
 }
 

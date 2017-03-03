@@ -19,11 +19,13 @@ import scopt._
 
 object GetCmdLineArgs {
 
-  case class Config(validate: Boolean = false,
-                    verbose: Boolean = false,
-                    version: Boolean = false,
-                    trace: Boolean = false,
-                    input_uri: String = "jp")
+  case class Config(
+    validate:  Boolean = false,
+    verbose:   Boolean = false,
+    version:   Boolean = false,
+    trace:     Boolean = false,
+    input_uri: String  = "jp"
+  )
 
   val argsParser = new OptionParser[Config]("Arktos") {
     head("Arktos", "version 0.1")

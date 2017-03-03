@@ -17,7 +17,7 @@ package org.arktos
 
 import org.scalatest.FlatSpec
 
-class arktosSpec extends FlatSpec {
+class URISpecJVM extends FlatSpec {
 
   val uriencoder = new URIEncoder()
 
@@ -33,19 +33,23 @@ class arktosSpec extends FlatSpec {
       // synthesize URI from parsed data
 
       // get protocol
-      val protocol = uri.getOrElse("protocol", Left("")).left.get
+      val protocol = uri.getOrElse("protocol", "").toString
+
       // if protocol is unknown ("") get scheme
-      val scheme = if (protocol != "") protocol else uri.getOrElse("scheme", Left("")).left.get
+      val `scheme`: String = if (protocol != "") protocol else uri("scheme").toString
+
       // get parameters
-      val params = uri.getOrElse("params", Right(List())).right.get
+      val params: List[(String, String)] = uri.getOrElse("params", List()).asInstanceOf[List[(String, String)]]
+
       // rebuild parameter list
-      val params_list = params.map({ case (k, null) ⇒ k; case (k, v) ⇒ k + "=" + uriencoder.encode(v, "UTF-8") }).mkString("&")
+      val params_list = params.map({ case (k, null) ⇒ k; case (k, v) ⇒ k + "=" + v }).mkString("&")
+
       // assemble original uri
-      val uri_synthesized = scheme + (if (scheme.length > 0) ":") + (if (uri.contains("scheme_postfix")) uri("scheme_postfix").left.get else "") +
-        ((uri.getOrElse("authority", Left("")): @unchecked) match { case Left(v) ⇒ v }) +
-        uri.getOrElse("path", Left("")).left.get +
+      val uri_synthesized = scheme + (if (`scheme`.length > 0) ":") + uri.getOrElse("scheme_postfix", "") +
+        uri.getOrElse("authority", "") +
+        uri.getOrElse("path", "") +
         (if (params_list.nonEmpty) "?" + params_list else "") +
-        uri.getOrElse("hash", Left("")).left.get
+        uri.getOrElse("hash", "")
 
       assert(input == uri_synthesized)
       assert(outcome)

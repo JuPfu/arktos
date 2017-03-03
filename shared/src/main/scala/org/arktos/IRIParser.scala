@@ -50,7 +50,7 @@
 
 package org.arktos
 
-import org.arktos.URIParser._
+//import org.arktos.URIParser._
 import org.parboiled2.{ ErrorFormatter, ParseError, ParserInput, CharPredicate }
 import org.parboiled2.CharPredicate._
 
@@ -59,6 +59,7 @@ import scala.util.{ Failure, Success }
 class IRIParser(input: ParserInput) extends URIParser(input: ParserInput) {
 
   import IRIParser._
+  import URIAST._
 
   //private       = %xE000-F8FF / %xF0000-FFFFD / %x100000-10FFFD
   val `private` = CharPredicate('\uE000' to '\uF8FF')
@@ -106,6 +107,8 @@ class IRIParser(input: ParserInput) extends URIParser(input: ParserInput) {
 
 object IRIParser {
 
+  import URIReturnValue._
+
   val isHighSurrogate = CharPredicate.from(Character.isHighSurrogate)
   val isLowSurrogate = CharPredicate.from(Character.isLowSurrogate)
 
@@ -115,7 +118,7 @@ object IRIParser {
     val result = parser.IRI_reference.run()
 
     result match {
-      case Success(x)             ⇒ Success((new evalURI().eval(result.get): @unchecked) match { case URI_Map(x) ⇒ x })
+      case Success(x)             ⇒ Success((new evalURI().eval(result.get): @unchecked) match { case URIMap(x) ⇒ x })
       case Failure(e: ParseError) ⇒ Failure(new RuntimeException(parser.formatError(result.failed.get.asInstanceOf[org.parboiled2.ParseError], new ErrorFormatter())))
       case Failure(e)             ⇒ Failure(new RuntimeException("Unexpected error during parsing run: " + result.failed.get))
     }

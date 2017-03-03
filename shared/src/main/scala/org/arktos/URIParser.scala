@@ -45,9 +45,13 @@
 
 package org.arktos
 
+import scala.Serializable
+
 import org.parboiled2._
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
+
+import URIAST._
 
 class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
@@ -241,12 +245,8 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
 object URIParser {
 
-  sealed trait URI_Return_Value
-  case class URI_String(s: String) extends URI_Return_Value
-  case class URI_Tuple(s: (String, String)) extends URI_Return_Value
-  case class URI_Param(s: List[(String, String)]) extends URI_Return_Value
-  case class URI_Map(m: Map[String, Either[String, List[(String, String)]]]) extends URI_Return_Value
-
+  import URIReturnValue._
+  /*
   sealed trait URI_AST
   case class URI_URI(scheme: URI_Scheme, hier_part: URI_AST, query: Option[URI_Query], fragment: Option[URI_Fragment]) extends URI_AST
   case class URI_Hier_Part_Absolute(authority: URI_Authority, path: URI_AST) extends URI_AST
@@ -284,14 +284,14 @@ object URIParser {
   case class URI_QueryToken(querytoken: String) extends URI_AST
   case class URI_Fragment(fragment: String) extends URI_AST
   case class Error(msg: String) extends URI_AST
-
+*/
   def apply(input: ParserInput) = {
 
     val parser = new URIParser(input)
     val result = parser.URI_reference.run()
 
     result match {
-      case Success(x)             ⇒ Success((new evalURI().eval(result.get): @unchecked) match { case URI_Map(x) ⇒ x })
+      case Success(x)             ⇒ Success((evalURI().eval(result.get): @unchecked) match { case URIMap(x) ⇒ x })
       case Failure(e: ParseError) ⇒ Failure(new RuntimeException(parser.formatError(result.failed.get.asInstanceOf[org.parboiled2.ParseError], new ErrorFormatter())))
       case Failure(e)             ⇒ Failure(new RuntimeException("Unexpected error during parsing run: " + result.failed.get))
     }
