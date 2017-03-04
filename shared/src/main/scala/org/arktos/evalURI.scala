@@ -15,13 +15,6 @@
 */
 package org.arktos
 
-import org.arktos.URIParser._
-import shapeless._
-import shapeless.poly.identity
-import shapeless.syntax.typeable._
-import shapeless.syntax.std.tuple._
-import shapeless.record._
-
 import scala.annotation.tailrec
 import scala.collection.immutable.Map
 
@@ -135,7 +128,7 @@ class evalURI {
           case Some(p) ⇒ eval(p)
           case None    ⇒ URIString("")
         }): @unchecked) match {
-          case (URIMap(m1), URIMap(m2), URIMap(m3)) ⇒  URIMap(m1 ++ m2 ++ m3 ++
+          case (URIMap(m1), URIMap(m2), URIMap(m3)) ⇒ URIMap(m1 ++ m2 ++ m3 ++
             Map("authority" → (m1("userinfo") + "@" + m2("hostname") + ":" + m3("port"))) ++
             Map("host" → (m2("hostname") + ":" + m3("port"))))
           case (URIMap(m1), URIMap(m2), URIString(s)) ⇒ URIMap(m1 ++ m2 ++

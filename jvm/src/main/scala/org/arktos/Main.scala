@@ -53,14 +53,14 @@ object Main extends App {
     val uscheme = uri("scheme")
 
     val usum = uscheme + "::" + uri("authority")
-    System.out.println("usum = "+ usum)
-    System.out.println("scheme = "+ uscheme)
+    System.out.println("usum = " + usum)
+    System.out.println("scheme = " + uscheme)
     System.out.println("Contains 'scheme' is " + uri.contains("scheme"))
     System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", "https"))
     System.out.println("Parameter to array = " + uri.toParArray)
 
     val uprot = uri("protocol")
-    System.out.println("protocol = "+ uprot)
+    System.out.println("protocol = " + uprot)
     val utipar = uri.toParArray(1)._2
     System.out.println("Parameter array(1) = " + utipar)
     val udrop = uri - "scheme"
@@ -72,7 +72,6 @@ object Main extends App {
     System.out.println("Concatenation of uris = " + uconcat)
 
     val params: List[(String, String)] = uri("params").asInstanceOf[List[(String, String)]]
-
 
     System.out.println("List of sorted Params =" + params.sorted)
 

@@ -1,8 +1,8 @@
 package org.arktos
 
 /**
-  * Created by jp on 02.03.17.
-  */
+ * Created by jp on 02.03.17.
+ */
 sealed trait URIAST {
   case class URI_URI(scheme: URI_Scheme, hier_part: URIAST, query: Option[URI_Query], fragment: Option[URI_Fragment]) extends URIAST
   case class URI_Hier_Part_Absolute(authority: URI_Authority, path: URIAST) extends URIAST
