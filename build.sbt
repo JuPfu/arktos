@@ -38,8 +38,7 @@ val formattingSettings = scalariformSettings ++ Seq(
     .setPreference(RewriteArrowSymbols, true)
     .setPreference(AlignParameters, true)
     .setPreference(AlignSingleLineCaseStatements, true)
-    .setPreference(DoubleIndentClassDeclaration, true)
-    .setPreference(PreserveDanglingCloseParenthesis, true))
+    .setPreference(DoubleIndentClassDeclaration, true))
 
 /*
 scalatex.SbtPlugin.projectSettings
@@ -69,7 +68,6 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(AlignParameters, true)
   .setPreference(AlignSingleLineCaseStatements, true)
   .setPreference(DoubleIndentClassDeclaration, true)
-  .setPreference(PreserveDanglingCloseParenthesis, true)
 
 lazy val arktos = crossProject.in(file("."))
   .settings(

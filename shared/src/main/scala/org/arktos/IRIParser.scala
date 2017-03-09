@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 - 2016 Juergen Pfundt
+ * Copyright (C) 2015 - 2017 Juergen Pfundt
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@
 
 package org.arktos
 
-//import org.arktos.URIParser._
 import org.parboiled2.{ ErrorFormatter, ParseError, ParserInput, CharPredicate }
 import org.parboiled2.CharPredicate._
 

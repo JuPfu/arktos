@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 - 2016 Juergen Pfundt
+* Copyright (C) 2015 - 2017 Juergen Pfundt
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class evalURI {
   import URIAST._
 
   def eval(expr: URIAST): URIReturnValue = {
-    expr match {
+    (expr: @unchecked) match {
       case URI_URI(scheme, hier_part, query, fragment) ⇒
         ((((
           eval(scheme),
@@ -76,7 +76,8 @@ class evalURI {
           case URIMap(m) ⇒ URIMap(m ++ Map("uri_type" → "absolute"))
         }
       case URI_Relative_Ref(relative_part, query, fragment) ⇒
-        ((((eval(relative_part),
+        ((((
+          eval(relative_part),
           query match {
             case Some(q) ⇒ eval(q)
             case None    ⇒ URIString("")
@@ -84,7 +85,7 @@ class evalURI {
           fragment match {
             case Some(f) ⇒ eval(f)
             case None    ⇒ URIString("")
-          }): @unchecked) match {
+        }): @unchecked) match {
           case (URIMap(m1), URIMap(m2), URIMap(m3))       ⇒ URIMap(m1 ++ m2 ++ m3)
           case (URIMap(m1), URIMap(m2), URIString(s3))    ⇒ URIMap(m1 ++ m2)
           case (URIMap(m1), URIString(s2), URIMap(m3))    ⇒ URIMap(m1 ++ m3)
@@ -163,7 +164,7 @@ class evalURI {
           case URI_IP_Literal(literal)      ⇒ (hostname: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("hostname" → m("ipliteral"))) }
           case URI_IPv4Address(ipv4address) ⇒ (hostname: @unchecked) match { case URIString(s) ⇒ URIMap(Map("hostname" → s) ++ Map("ipv4address" → s)) }
           case URI_Reg_Name(regname)        ⇒ (hostname: @unchecked) match { case URIString(s) ⇒ URIMap(Map("hostname" → s) ++ Map("regname" → s)) }
-        }
+          }
       case URI_IP_Literal(ipLiteral) ⇒
         val literal = eval(ipLiteral)
         (ipLiteral: @unchecked) match {
@@ -171,7 +172,7 @@ class evalURI {
           case URI_IPv6AddressZ(address, zone)       ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("ipliteral" → ("[" + m("ipv6addressz") + "]"))) }
           case URI_IPvFuture(ip)                     ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("ipliteral" → ("[v" + m("ipvfuture") + "]"))) }
           case URI_IPvFutureLinkLocal(address, zone) ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("ipliteral" → ("[v1." + m("ipvfuturelinklocal") + "]"))) }
-        }
+          }
       case URI_IPvFuture(ipvfuture) ⇒ URIMap(Map("ipvfuture" → ipvfuture))
       case URI_IPvFutureLinkLocal(ipv6Address, zoneID) ⇒ ((eval(ipv6Address), eval(zoneID)): @unchecked) match {
         case (URIMap(m1), URIString(z)) ⇒ URIMap(Map("ipvfuturelinklocal" → (m1("ipv6Address").toString + "%" + z)) ++ Map("zoneid" → z))

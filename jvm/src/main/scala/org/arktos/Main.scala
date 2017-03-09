@@ -52,32 +52,23 @@ object Main extends App {
     System.out.println("Get values " + uri.values)
     val uscheme = uri("scheme")
 
-    val usum = uscheme + "::" + uri("authority")
-    System.out.println("usum = " + usum)
+    System.out.println("usum = " + (uscheme + "::" + uri("authority")))
     System.out.println("scheme = " + uscheme)
     System.out.println("Contains 'scheme' is " + uri.contains("scheme"))
     System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", "https"))
     System.out.println("Parameter to array = " + uri.toParArray)
 
-    val uprot = uri("protocol")
-    System.out.println("protocol = " + uprot)
-    val utipar = uri.toParArray(1)._2
-    System.out.println("Parameter array(1) = " + utipar)
-    val udrop = uri - "scheme"
-    System.out.println("Drop key and value '-' = " + udrop)
-    val uadd = uri + ("scheme" → "https")
-    System.out.println("Add key and value '+' = " + uadd)
+    System.out.println("protocol = " + uri("protocol"))
+    System.out.println("Parameter array(1) = " + (uri.toParArray(1)._2))
+    System.out.println("Drop key and value '-' = " + (uri - "scheme"))
+    System.out.println("Add key and value '+' = " + (uri + ("scheme" → "https")))
+    System.out.println("Concatenation of uris = " + (uri ++ Map("jp" → List(("a", "b")))))
 
-    val uconcat = uri ++ Map("jp" → List(("a", "b")))
-    System.out.println("Concatenation of uris = " + uconcat)
-
-    val params: List[(String, String)] = uri("params").asInstanceOf[List[(String, String)]]
-
+    val params = uri("params").asInstanceOf[List[(String, String)]]
     System.out.println("List of sorted Params =" + params.sorted)
 
-    //val first = params.head
-
-    //System.out.println("First = "+ first)
+    val p = uri.getOrElse("params", List(("",""))).asInstanceOf[List[(String, String)]]
+    System.out.println("List of sorted Params =" + p.sorted)
   }
 }
 
