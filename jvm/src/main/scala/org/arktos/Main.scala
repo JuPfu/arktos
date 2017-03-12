@@ -17,7 +17,6 @@
 package org.arktos
 
 import org.arktos.GetCmdLineArgs._
-import org.arktos.URI.URIType
 
 object Main extends App {
 
@@ -121,6 +120,7 @@ object Main extends App {
       uri.getOrElse("hash", "")
 
     System.out.println("synthesized = " + uri_synthesized)
+    System.out.println("URI synthesized = " + URI.build(uri))
 
     val pURI = URIParser(uri_synthesized)
     if (pURI.isFailure) {

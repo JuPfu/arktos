@@ -250,7 +250,7 @@ object URIParser {
     val result = parser.URI_reference.run()
 
     result match {
-      case Success(x)             ⇒ Success((evalURI().eval(result.get): @unchecked) match { case URIMap(x) ⇒ x })
+      case Success(x)             ⇒ Success((evalURI().eval(result.get): @unchecked) match { case URIMap(y) ⇒ y })
       case Failure(e: ParseError) ⇒ Failure(new RuntimeException(parser.formatError(result.failed.get.asInstanceOf[org.parboiled2.ParseError], new ErrorFormatter())))
       case Failure(e)             ⇒ Failure(new RuntimeException("Unexpected error during parsing run: " + result.failed.get))
     }

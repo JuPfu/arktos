@@ -24,7 +24,7 @@ sealed trait URIReturnValue {
 
   case class URIParam(s: List[(String, String)]) extends URIReturnValue
 
-  case class URIMap[+V >: Serializable](m: Map[String, V]) extends URIReturnValue
+  case class URIMap[V >: Serializable](m: Map[String, V]) extends URIReturnValue
 }
 
 object URIReturnValue extends URIReturnValue
