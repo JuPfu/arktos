@@ -45,8 +45,6 @@
 
 package org.arktos
 
-import scala.Serializable
-
 import org.parboiled2._
 
 import scala.util.{ Failure, Success }
@@ -56,7 +54,6 @@ import URIAST._
 class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
   import CharPredicate.{ Alpha, AlphaNum, Digit, Digit19, HexDigit }
-  import URIParser._
 
   // dec_octet helpers
   val Digit4 = CharPredicate('0' to '4')

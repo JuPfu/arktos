@@ -60,6 +60,7 @@ the case of percent-encoding an already percent-encoded string.
 */
 
 object URIEncoder {
+
   def apply = new URIEncoder()
 
   val hexmap = Array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F')

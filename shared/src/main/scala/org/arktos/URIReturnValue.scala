@@ -16,8 +16,6 @@
 
 package org.arktos
 
-import shapeless.{ HList }
-
 sealed trait URIReturnValue {
 
   case class URIString(s: String) extends URIReturnValue
