@@ -30,26 +30,7 @@ class URISpecJVM extends FlatSpec {
     } else {
       val uri = parsed_uri.get
 
-      // synthesize URI from parsed data
-
-      // get protocol
-      val protocol = uri.getOrElse("protocol", "").toString
-
-      // if protocol is unknown ("") get scheme
-      val `scheme`: String = if (protocol != "") protocol else uri("scheme").toString
-
-      // get parameters
-      val params: List[(String, String)] = uri.getOrElse("params", List()).asInstanceOf[List[(String, String)]]
-
-      // rebuild parameter list
-      val params_list = params.map({ case (k, null) ⇒ k; case (k, v) ⇒ k + "=" + v }).mkString("&")
-
-      // assemble original uri
-      val uri_synthesized = scheme + (if (`scheme`.length > 0) ":") + uri.getOrElse("scheme_postfix", "") +
-        uri.getOrElse("authority", "") +
-        uri.getOrElse("path", "") +
-        (if (params_list.nonEmpty) "?" + params_list else "") +
-        uri.getOrElse("hash", "")
+      val uri_synthesized = URI.build(uri)
 
       assert(input == uri_synthesized)
       assert(outcome)
