@@ -77,10 +77,6 @@ object Main extends App {
     System.out.println("params new = " + x.asInstanceOf[List[(String, String)]])
 
     // set up a new URI
-    //val newUriReturnValue = URIReturnValue.URIMap(Map("scheme" → "https"))
-
-    //val newUri = newUriReturnValue match { case URIReturnValue.URIMap(x) ⇒ x }
-
     val encoder = new URIEncoder
 
     val uri1: URIType = URI.get +
