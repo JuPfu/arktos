@@ -42,7 +42,7 @@ object Main extends App {
 
   val fmt = cmdLineArgs.get.fmt
 
-  val parsedURI = if ( fmt == "uri" ) URIParser(input) else IRIParser(input)
+  val parsedURI = if (fmt == "uri") URIParser(input) else IRIParser(input)
 
   if (parsedURI.isFailure) {
     System.err.println("Input '" + input + "': " + parsedURI.failed.get)
