@@ -23,6 +23,7 @@ object GetCmdLineArgs {
     validate:  Boolean = false,
     verbose:   Boolean = false,
     version:   Boolean = false,
+    fmt:       String  = "uri",
     trace:     Boolean = false,
     input_uri: String  = "jp"
   )
@@ -34,6 +35,7 @@ object GetCmdLineArgs {
     opt[Unit]("version") action { (_, c) ⇒ c.copy(version = true) } text "Arktos version information"
     opt[Unit]('v', "validate") action { (_, c) ⇒ c.copy(validate = true) } text "validate input"
     opt[Unit]('t', "trace") action { (_, c) ⇒ c.copy(trace = true) } text "display error trace"
+    opt[String]('f', "fmt").valueName("uri,iri").action((x, c) ⇒ c.copy(fmt = x.toLowerCase())).validate(f ⇒ if (f.equals("uri".toLowerCase) || f.equals("iri".toLowerCase)) success else failure(s"format $f not supported")) text ("URI or IRI")
     arg[String]("<URI>") required () action { (x, c) ⇒ c.copy(input_uri = x) } text "uri"
   }
 }

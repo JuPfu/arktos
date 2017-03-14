@@ -17,6 +17,7 @@
 package org.arktos
 
 import org.arktos.GetCmdLineArgs._
+import org.arktos.URI.URIType
 
 object Main extends App {
 
@@ -39,7 +40,9 @@ object Main extends App {
     System.err.println((if (!validate) "Analyse: " else "Validate: ") + input)
   }
 
-  val parsedURI = URIParser(input)
+  val fmt = cmdLineArgs.get.fmt
+
+  val parsedURI = if ( fmt == "uri" ) URIParser(input) else IRIParser(input)
 
   if (parsedURI.isFailure) {
     System.err.println("Input '" + input + "': " + parsedURI.failed.get)
@@ -65,11 +68,8 @@ object Main extends App {
     System.out.println("Add key and value '+' = " + (uri + ("scheme" → "https")))
     System.out.println("Concatenation = " + (uri + ("jp" → List(("a", "b")))))
 
-    val params = uri("params").asInstanceOf[List[(String, String)]]
+    val params = uri.getOrElse("params", List(("", ""))).asInstanceOf[List[(String, String)]]
     System.out.println("List of sorted Params =" + params.sorted)
-
-    val p = uri.getOrElse("params", List(("", ""))).asInstanceOf[List[(String, String)]]
-    System.out.println("List of sorted Params =" + p.sorted)
 
     System.out.println("Update params = " + uri.updated("params", List(("a", "1"), ("z", "24"))))
 
@@ -77,56 +77,29 @@ object Main extends App {
     System.out.println("params new = " + x.asInstanceOf[List[(String, String)]])
 
     // set up a new URI
-    val newUriReturnValue = URIReturnValue.URIMap(Map("scheme" → "https"))
+    //val newUriReturnValue = URIReturnValue.URIMap(Map("scheme" → "https"))
 
-    val newUri = newUriReturnValue match { case URIReturnValue.URIMap(x) ⇒ x }
+    //val newUri = newUriReturnValue match { case URIReturnValue.URIMap(x) ⇒ x }
 
     val encoder = new URIEncoder
 
-    val uri1 = newUri +
+    val uri1: URIType = URI.get +
+      ("scheme" → "https") +
       ("path" → "/github.com/JuPfu/arktos/graphs/traffic") +
       ("params" → List(("user", "jp"), ("code", encoder.encode("TestA3ßÜ §1"))))
 
-    System.out.println("uri1 = " + uri1.toString)
+    System.out.println("uri1 = " + uri1)
 
-    val u = URI.get + ("path" → "/github.com/JuPfu/arktos/graphs/traffic")
-    val v = URI.get + "scheme" → "ftp"
+    val uri_synthesized = URI.build(uri)
 
-    System.out.println("u = " + u)
-    System.out.println("v = " + v)
+    System.out.println("URI synthesized = " + uri_synthesized)
 
-    System.out.println("u = " + (u + ("params" → List(("user", "jp"), ("code", encoder.encode("TestA3ßÜ §1"))))))
-
-    val w = (u + ("params" → List(("user", "jp"), ("code", encoder.encode("TestA3ßÜ §1")))))
-
-    System.out.println("w = " + URI.build(w))
-    //get protocol
-    val protocol = uri1.getOrElse("protocol", "")
-
-    // if protocol is unknown ("") get scheme
-    val `scheme` = if (protocol.toString != "") protocol else uri("scheme")
-
-    // get parameters
-    val p1 = uri1.getOrElse("params", List()).asInstanceOf[List[(String, String)]]
-
-    // rebuild parameter list
-    val params_list = p1.map({ case (k, null) ⇒ k; case (k, v) ⇒ k + "=" + v }).mkString("&")
-
-    // assemble original uri
-    val uri_synthesized = `scheme` + (if (`scheme`.toString.length > 0) ":" else "") + uri.getOrElse("scheme_postfix", "") +
-      uri.getOrElse("authority", "") +
-      uri.getOrElse("path", "") +
-      (if (params_list.nonEmpty) "?" + params_list else "") +
-      uri.getOrElse("hash", "")
-
-    System.out.println("synthesized = " + uri_synthesized)
-    System.out.println("URI synthesized = " + URI.build(uri))
-
-    val pURI = URIParser(uri_synthesized)
-    if (pURI.isFailure) {
-      System.err.println("Input '" + input + "': " + parsedURI.failed.get)
+    // check URI
+    val checkURI = URIParser(uri_synthesized)
+    if (checkURI.isFailure) {
+      System.err.println("Input '" + input + "': " + checkURI.failed.get)
     } else {
-      System.out.println("URI=" + pURI)
+      System.out.println("URI=" + checkURI)
     }
   }
 }
