@@ -80,9 +80,9 @@ object Main extends App {
     val encoder = new URIEncoder
 
     val uri1: URIType = URI.get +
-      ("scheme" → "https") +
-      ("path" → "/github.com/JuPfu/arktos/graphs/traffic") +
-      ("params" → List(("user", "jp"), ("code", encoder.encode("TestA3ßÜ §1"))))
+      "scheme" → "https" +
+      "path" → "/github.com/JuPfu/arktos/graphs/traffic" +
+      "params" → List(("user", "jp"), ("code", encoder.encode("TestA3ßÜ §1")))
 
     System.out.println("uri1 = " + uri1)
 
