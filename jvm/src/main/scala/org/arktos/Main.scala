@@ -96,7 +96,7 @@ object Main extends App {
     // update params
     System.out.println("Update params = " + uri.updated("params", List(("a", "1"), ("z", "24"))))
 
-    val p = (uri - "params" - "raw_params" + ("params" → List(("x", "u"), ("y", "v"))))("params")
+    val p = (uri - "params" + ("params" → List(("x", "u"), ("y", "v"))))("params")
     System.out.println("params new = " + p.asInstanceOf[List[(String, String)]])
 
     // set up a new URI
