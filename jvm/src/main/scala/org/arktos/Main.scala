@@ -17,7 +17,6 @@
 package org.arktos
 
 import org.arktos.GetCmdLineArgs._
-import org.arktos.URI.URIType
 
 object Main extends App {
 
@@ -73,7 +72,7 @@ object Main extends App {
     System.out.println("Contains 'scheme' is " + uri.contains("scheme"))
     // get a value with definite fallback
     System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", "https"))
-    if ( uri.contains("scheme")) {
+    if (uri.contains("scheme")) {
       // update "scheme"
       System.out.println("Update scheme = " + (uri.updated("scheme", "ftp")))
       // update in a different way
@@ -100,7 +99,7 @@ object Main extends App {
     System.out.println("params new = " + p.asInstanceOf[List[(String, String)]])
 
     // set up a new URI
-    val encoder = new URIEncoder
+    val encoder = URIEncoder()
 
     val uri1 = URI.get + // get empty URI
       "scheme" → "https" +
@@ -110,7 +109,7 @@ object Main extends App {
     System.out.println("uri1 = " + uri1)
 
     // build uri string
-    val uri_synthesized = URI.build(uri)
+    val uri_synthesized = URI.build(uri1)
 
     System.out.println("URI synthesized = " + uri_synthesized)
 

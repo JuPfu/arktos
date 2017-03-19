@@ -149,16 +149,20 @@ class evalURI {
           case (URIMap(m1), URIMap(m2))   ⇒ URIMap(m1 ++ m2 ++ Map("userinfo" → (m1("user") + ":" + m2("password"))))
           case (URIMap(m1), URIString(s)) ⇒ URIMap(m1 ++ Map("userinfo" → m1("user")))
         }
-      case URI_User(user)                   ⇒ URIMap(Map("user" → uridecoder.decode(user)))
-      case URI_Password(password)           ⇒ URIMap(Map("password" → uridecoder.decode(password)))
-      case URI_Reg_Name(name)               ⇒ URIString(uridecoder.decode(name))
-      case URI_Port(port)                   ⇒ URIMap(Map("port" → port))
-      case URI_Path(path)                   ⇒ eval(path)
-      case URI_Path_AbEmpty(path_abempty)   ⇒ URIMap(Map("path" → uridecoder.decode(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y))))
-      case URI_Path_Absolute(path_absolute) ⇒ URIMap(Map("path" → uridecoder.decode(path_absolute.foldLeft("")((x, y) ⇒ x + "/" + y))))
-      case URI_Path_NoScheme(path_noscheme) ⇒ URIMap(Map("path" → uridecoder.decode(path_noscheme.mkString("/"))))
-      case URI_Path_Rootless(path_rootless) ⇒ URIMap(Map("path" → uridecoder.decode(path_rootless.mkString("/"))))
-      case URI_Path_Empty(path_empty)       ⇒ URIMap(Map("path" → path_empty))
+      case URI_User(user)         ⇒ URIMap(Map("user" → uridecoder.decode(user)))
+      case URI_Password(password) ⇒ URIMap(Map("password" → uridecoder.decode(password)))
+      case URI_Reg_Name(name)     ⇒ URIString(uridecoder.decode(name))
+      case URI_Port(port)         ⇒ URIMap(Map("port" → port))
+      case URI_Path(path)         ⇒ eval(path)
+      case URI_Path_AbEmpty(path_abempty) ⇒ URIMap(Map("path" → uridecoder.decode(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y))) ++
+        Map("segment" → path_abempty.foldLeft(List.empty[String])((x, y) ⇒ x ++ List(uridecoder.decode(y)))))
+      case URI_Path_Absolute(path_absolute) ⇒ URIMap(Map("path" → uridecoder.decode(path_absolute.foldLeft("")((x, y) ⇒ x + "/" + y))) ++
+        Map("segment" → path_absolute.foldLeft(List.empty[String])((x, y) ⇒ x ++ List(uridecoder.decode(y)))))
+      case URI_Path_NoScheme(path_noscheme) ⇒ URIMap(Map("path" → uridecoder.decode(path_noscheme.mkString("/"))) ++
+        Map("segment" → path_noscheme.foldLeft(List.empty[String])((x, y) ⇒ x ++ List(uridecoder.decode(y)))))
+      case URI_Path_Rootless(path_rootless) ⇒ URIMap(Map("path" → uridecoder.decode(path_rootless.mkString("/"))) ++
+        Map("segment" → path_rootless.foldLeft(List.empty[String])((x, y) ⇒ x ++ List(uridecoder.decode(y)))))
+      case URI_Path_Empty(path_empty) ⇒ URIMap(Map("path" → path_empty))
       case URI_Host(rule) ⇒
         val hostname = eval(rule)
         (rule: @unchecked) match {
