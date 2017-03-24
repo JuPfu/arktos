@@ -48,7 +48,6 @@ package org.arktos
 import org.parboiled2._
 
 import scala.util.{ Failure, Success }
-
 import URIAST._
 
 class URIParser(val input: ParserInput) extends Parser with StringBuilding {
@@ -242,15 +241,36 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
 
 object URIParser {
 
+  import org.arktos.URI.URIType
   import URIReturnValue._
 
-  def apply(input: ParserInput) = {
+  def apply(input: ParserInput, validate: Boolean = false) = {
 
     val parser = new URIParser(input)
     val result = parser.URI_reference.run()
 
     result match {
-      case Success(x)             ⇒ Success((evalURI().eval(result.get): @unchecked) match { case URIMap(y) ⇒ y })
+
+      case Success(x) ⇒ Success(if (validate) {
+        Map.empty: URIType
+      } else {
+        (evalURI().eval(result.get): @unchecked) match {
+          case URIMap(m) ⇒ m
+        }
+      })
+      case Failure(e: ParseError) ⇒ Failure(new RuntimeException(parser.formatError(result.failed.get.asInstanceOf[org.parboiled2.ParseError], new ErrorFormatter())))
+      case Failure(e)             ⇒ Failure(new RuntimeException("Unexpected error during parsing run: " + result.failed.get))
+    }
+  }
+
+  def validatePath(input: ParserInput, validate: Boolean = false) = {
+
+    val parser = new URIParser(input)
+    val result = parser.path.run()
+
+    result match {
+      case Success(x) ⇒ Success(if (validate) { Map.empty: URIType }
+      else { (evalURI().eval(result.get): @unchecked) match { case URIMap(m) ⇒ m } })
       case Failure(e: ParseError) ⇒ Failure(new RuntimeException(parser.formatError(result.failed.get.asInstanceOf[org.parboiled2.ParseError], new ErrorFormatter())))
       case Failure(e)             ⇒ Failure(new RuntimeException("Unexpected error during parsing run: " + result.failed.get))
     }

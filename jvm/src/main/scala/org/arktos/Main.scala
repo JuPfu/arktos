@@ -55,8 +55,9 @@ object Main extends App {
     // get the URI respectively IRI
     val uri = parsedURI.get
 
-    // show all keys contained in the parsed URI respectively IRI
-    System.out.println("Get keys " + uri.keys)
+    // get all keys contained in the parsed URI in a Set
+    val keys = uri.keys
+    System.out.println("Keys of URI parsed " + keys)
 
     // iterate over keys
     uri.keys.foreach(x ⇒ System.out.println("Key = " + x + " value = " + uri.getOrElse(x, "")))
@@ -95,11 +96,24 @@ object Main extends App {
     // update params
     System.out.println("Update params = " + uri.updated("params", List(("a", "1"), ("z", "24"))))
 
+    // get segments
+    val seg = uri.getOrElse("segment", List()).asInstanceOf[List[String]]
+
+    System.out.println("Segments = " + seg)
+
     val p = (uri - "params" + ("params" → List(("x", "u"), ("y", "v"))))("params")
     System.out.println("params new = " + p.asInstanceOf[List[(String, String)]])
 
     // set up a new URI
     val encoder = URIEncoder()
+
+    val pathParser = new URIParser("/github.com/JuPfu/arktos/graphs/traffic").path.run()
+    if (pathParser.isFailure) System.err.println("Error in path: " + pathParser.get)
+    else System.err.println("PATH is okay: " + pathParser.get)
+
+    val validateP = URIParser.validatePath(uri.getOrElse("path", "").toString)
+    if (validateP.isFailure) System.err.println("Error in path: " + validateP.get)
+    else System.err.println("PATH is okay: " + uri.getOrElse("path", ""))
 
     val uri1 = URI.get + // get empty URI
       "scheme" → "https" +
@@ -114,11 +128,11 @@ object Main extends App {
     System.out.println("URI synthesized = " + uri_synthesized)
 
     // check URI
-    val checkURI = URIParser(uri_synthesized)
+    val checkURI = URIParser(uri_synthesized, true)
     if (checkURI.isFailure) {
       System.err.println("Input '" + input + "': " + checkURI.failed.get)
     } else {
-      System.out.println("URI=" + checkURI)
+      System.out.println("--->URI=" + checkURI)
     }
   }
 }

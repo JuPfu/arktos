@@ -106,18 +106,38 @@ class IRIParser(input: ParserInput) extends URIParser(input: ParserInput) {
 
 object IRIParser {
 
+  import URI.URIType
   import URIReturnValue._
 
   val isHighSurrogate = CharPredicate.from(Character.isHighSurrogate)
   val isLowSurrogate = CharPredicate.from(Character.isLowSurrogate)
 
-  def apply(input: ParserInput) = {
+  def apply(input: ParserInput, validate: Boolean = false) = {
 
     val parser = new IRIParser(input)
     val result = parser.IRI_reference.run()
 
     result match {
-      case Success(x)             ⇒ Success((new evalURI().eval(result.get): @unchecked) match { case URIMap(x) ⇒ x })
+      case Success(x) ⇒ Success(if (validate) {
+        Map.empty: URIType
+      } else {
+        (evalURI().eval(result.get): @unchecked) match {
+          case URIMap(m) ⇒ m
+        }
+      })
+      case Failure(e: ParseError) ⇒ Failure(new RuntimeException(parser.formatError(result.failed.get.asInstanceOf[org.parboiled2.ParseError], new ErrorFormatter())))
+      case Failure(e)             ⇒ Failure(new RuntimeException("Unexpected error during parsing run: " + result.failed.get))
+    }
+  }
+
+  def validatePath(input: ParserInput, validate: Boolean = false) = {
+
+    val parser = new IRIParser(input)
+    val result = parser.path.run()
+
+    result match {
+      case Success(x) ⇒ Success(if (validate) { Map.empty: URIType }
+      else { (evalURI().eval(result.get): @unchecked) match { case URIMap(m) ⇒ m } })
       case Failure(e: ParseError) ⇒ Failure(new RuntimeException(parser.formatError(result.failed.get.asInstanceOf[org.parboiled2.ParseError], new ErrorFormatter())))
       case Failure(e)             ⇒ Failure(new RuntimeException("Unexpected error during parsing run: " + result.failed.get))
     }

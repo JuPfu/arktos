@@ -168,7 +168,13 @@ class evalURI {
         (rule: @unchecked) match {
           case URI_IP_Literal(literal)      ⇒ (hostname: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("hostname" → m("ipliteral"))) }
           case URI_IPv4Address(ipv4address) ⇒ (hostname: @unchecked) match { case URIString(s) ⇒ URIMap(Map("hostname" → s) ++ Map("ipv4address" → s)) }
-          case URI_Reg_Name(regname)        ⇒ (hostname: @unchecked) match { case URIString(s) ⇒ URIMap(Map("hostname" → s) ++ Map("regname" → s)) }
+          case URI_Reg_Name(regname) ⇒ (hostname: @unchecked) match {
+            case URIString(s) ⇒ URIMap(Map("hostname" → s) ++
+              Map("regname" → s) ++
+              Map("domain" → s.split('.').toList.tail.mkString(".")) ++
+              Map("subdomain" → s.split('.').toList.head) ++
+              Map("tld" → s.split('.').toList.last))
+          }
         }
       case URI_IP_Literal(ipLiteral) ⇒
         val literal = eval(ipLiteral)
