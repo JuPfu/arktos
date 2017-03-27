@@ -143,15 +143,15 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   //               / [ *5( h16 ":" ) h16 ] "::"              h16
   //               / [ *6( h16 ":" ) h16 ] "::"
   def IPv6address = rule {
-    atomic(capture(6.times(h16 ~ ':') ~ ls32) |
-      capture("::" ~ 5.times(h16 ~ ':') ~ ls32) |
-      capture(h16.? ~ "::" ~ 4.times(h16 ~ ':') ~ ls32) |
-      capture((1 to 2).times(h16).separatedBy(':').? ~ "::" ~ 3.times(h16 ~ ':') ~ ls32) |
-      capture((1 to 3).times(h16).separatedBy(':').? ~ "::" ~ 2.times(h16 ~ ':') ~ ls32) |
-      capture((1 to 4).times(h16).separatedBy(':').? ~ "::" ~ h16 ~ ':' ~ ls32) |
-      capture((1 to 5).times(h16).separatedBy(':').? ~ "::" ~ ls32) |
-      capture((1 to 6).times(h16).separatedBy(':').? ~ "::" ~ h16) |
-      capture((1 to 7).times(h16).separatedBy(':').? ~ "::")) ~> URI_IPv6Address
+    (atomic(capture(6.times(h16 ~ ':') ~ ls32)) |
+      atomic(capture("::" ~ 5.times(h16 ~ ':') ~ ls32)) |
+      atomic(capture(h16.? ~ "::" ~ 4.times(h16 ~ ':') ~ ls32)) |
+      atomic(capture((1 to 2).times(h16).separatedBy(':').? ~ "::" ~ 3.times(h16 ~ ':') ~ ls32)) |
+      atomic(capture((1 to 3).times(h16).separatedBy(':').? ~ "::" ~ 2.times(h16 ~ ':') ~ ls32)) |
+      atomic(capture((1 to 4).times(h16).separatedBy(':').? ~ "::" ~ h16 ~ ':' ~ ls32)) |
+      atomic(capture((1 to 5).times(h16).separatedBy(':').? ~ "::" ~ ls32)) |
+      atomic(capture((1 to 6).times(h16).separatedBy(':').? ~ "::" ~ h16)) |
+      atomic(capture((1 to 7).times(h16).separatedBy(':').? ~ "::"))) ~> URI_IPv6Address
   }
 
   // h16           = 1*4HEXDIG
@@ -171,7 +171,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def dec_octet = rule { '1' ~ Digit ~ Digit | '2' ~ Digit4 ~ Digit | '2' ~ '5' ~ Digit5 | Digit19 ~ Digit | Digit }
 
   // reg-name      = *( unreserved / pct-encoded / sub-delims )
-  def reg_name = rule { atomic(capture((unreserved | pct_encoded | sub_delims).*)) ~> URI_Reg_Name }
+  def reg_name = rule { (capture((unreserved | pct_encoded | sub_delims).*)) ~> URI_Reg_Name }
 
   // A registered name intended for lookup in the DNS uses the syntax
   // defined in Section 3.5 of [RFC1034] and Section 2.1 of [RFC1123].
@@ -194,19 +194,19 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def path = rule { (path_absolute | path_noscheme | path_rootless | path_abempty | path_empty) ~> URI_Path }
 
   // path-abempty  = *( "/" segment )
-  def path_abempty = rule { atomic(('/' ~ capture(segment)).*) ~> URI_Path_AbEmpty }
+  def path_abempty = rule { (('/' ~ capture(segment)).*) ~> URI_Path_AbEmpty }
 
   // path-absolute = "/" [ segment-nz *( "/" segment ) ]
   def path_absolute = rule {
-    (atomic('/' ~ (capture(segment_nz) ~ ('/' ~ capture(segment)).*)) ~> ((s_nz: String, s: Seq[String]) ⇒ s_nz +: s) ~> URI_Path_Absolute) |
-      atomic('/' ~ push("" :: Nil)) ~> URI_Path_Absolute
+    (('/' ~ (capture(segment_nz) ~ ('/' ~ capture(segment)).*)) ~> ((s_nz: String, s: Seq[String]) ⇒ s_nz +: s) ~> URI_Path_Absolute) |
+      ('/' ~ push("" :: Nil)) ~> URI_Path_Absolute
   }
 
   // path-noscheme = segment-nz-nc *( "/" segment )
-  def path_noscheme = rule { atomic(capture(segment_nz_nc) ~ ('/' ~ capture(segment)).*) ~> ((s_nz_nc: String, s: Seq[String]) ⇒ s_nz_nc +: s) ~> URI_Path_NoScheme }
+  def path_noscheme = rule { (capture(segment_nz_nc) ~ ('/' ~ capture(segment)).*) ~> ((s_nz_nc: String, s: Seq[String]) ⇒ s_nz_nc +: s) ~> URI_Path_NoScheme }
 
   // path-rootless = segment-nz *( "/" segment )
-  def path_rootless = rule { atomic(capture(segment_nz) ~ ('/' ~ capture(segment)).*) ~> ((s_nz: String, s: Seq[String]) ⇒ s_nz +: s) ~> URI_Path_Rootless }
+  def path_rootless = rule { (capture(segment_nz) ~ ('/' ~ capture(segment)).*) ~> ((s_nz: String, s: Seq[String]) ⇒ s_nz +: s) ~> URI_Path_Rootless }
 
   // path-empty    = 0<pchar>
   def path_empty = rule { capture("") ~> URI_Path_Empty }
@@ -227,13 +227,13 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   // def query = rule { capture((pchar | '/' | '?').*) ~> URI_Query }
   def query = rule { (queryParameter | queryToken).*('&') ~> URI_Query }
   def queryParameter = rule { queryVariable ~ '=' ~ queryValue ~> URI_QueryParameter }
-  def queryVariable = rule { capture((qchar | '/' | '?').*) ~> URI_QueryVariable }
+  def queryVariable = rule { capture((qchar | '/' | '?').+) ~> URI_QueryVariable }
   def queryValue = rule { capture((qchar | '/' | '?').*) ~> URI_QueryValue }
-  def queryToken = rule { capture((qchar | '/' | '?').*) ~> URI_QueryToken }
+  def queryToken = rule { capture((qchar | '/' | '?').+) ~> URI_QueryToken }
   def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' }
 
   // fragment      = *( pchar / "/" / "?" )
-  def fragment = rule { atomic(capture((pchar | '/' | '?').*)) ~> URI_Fragment }
+  def fragment = rule { capture((pchar | '/' | '?').*) ~> URI_Fragment }
 
   // pct-encoded    = "%" HEXDIG HEXDIG
   def pct_encoded = rule { '%' ~ HexDigit ~ HexDigit }

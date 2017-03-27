@@ -18,6 +18,8 @@ package org.arktos
 
 import org.arktos.GetCmdLineArgs._
 
+import scala.util.{ Try, Success, Failure }
+
 object Main extends App {
 
   val cmdLineArgs = argsParser.parse(args, Config())
@@ -60,7 +62,7 @@ object Main extends App {
     System.out.println("Keys of URI parsed " + keys)
 
     // iterate over keys
-    uri.keys.foreach(x ⇒ System.out.println("Key = " + x + " value = " + uri.getOrElse(x, "")))
+    uri.keys.foreach(key ⇒ System.out.println("key = " + key + "\t\tvalue = " + uri.getOrElse(key, "")))
 
     // show all values contained in the parsed URI respectively IRI
     System.out.println("Get values " + uri.values)
@@ -71,6 +73,18 @@ object Main extends App {
     System.out.println("authority = " + uri.getOrElse("autority", ""))
     // check for key
     System.out.println("Contains 'scheme' is " + uri.contains("scheme"))
+
+    val s = if (uri.contains("scheme")) uri("scheme") else "http"
+
+    uri.get("scheme") match {
+      case Some(s) ⇒ s // return value for key "scheme"
+      case None    ⇒ "http" // use "http" as default
+    }
+
+    val t: Try[String] = Try { uri("schemes").toString }
+    if (t.isFailure) System.err.println("KEY schemes not found")
+    else System.err.println("Get value for SCHEME " + t.get)
+
     // get a value with definite fallback
     System.out.println("Get value for 'scheme' = " + uri.getOrElse("scheme", "https"))
     if (uri.contains("scheme")) {
@@ -121,6 +135,17 @@ object Main extends App {
       "params" → List(("user", "jp"), ("code", encoder.encode("TestA3ßÜ §1")))
 
     System.out.println("uri1 = " + uri1)
+
+    val fb = URIParser("http://JeffryJones:highschool@//www.example.com:8042/ferrari/california/spyder.html?who&surname=Bueller&firstname=Ferris&film=#Chicago")
+    val fb_uri = if (fb.isSuccess) fb.get else URI.get // empty URI
+    System.err.println("fb = " + fb_uri)
+
+    val modified_uri = uri1 - "user" - "password" - "scheme"
+    System.err.println("Modified uri = " + modified_uri)
+
+    val fb_params = fb_uri.getOrElse("params", List()).asInstanceOf[List[(String, String)]]
+    val fb_newParams = fb_params.foldLeft(List.empty[(String, String)])((x, y) ⇒ if (y._2 != "" && y._2 != null) x ++ List(y) else x)
+    println("fb_params without singletons = " + fb_newParams.sorted)
 
     // build uri string
     val uri_synthesized = URI.build(uri1)

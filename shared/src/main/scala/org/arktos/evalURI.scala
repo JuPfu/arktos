@@ -15,6 +15,8 @@
 */
 package org.arktos
 
+import org.arktos.URI.URIType
+
 import scala.annotation.tailrec
 import scala.collection.immutable.Map
 
@@ -157,22 +159,30 @@ class evalURI {
       case URI_Path_AbEmpty(path_abempty) ⇒
         val p = uridecoder.decode(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y))
         val f = new java.io.File(p)
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ Map("directory" → f.getParent) ++
+        val d = f.getParent
+        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++
+          (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
           Map("segment" → path_abempty.foldLeft(List.empty[String])((x, y) ⇒ x ++ List(uridecoder.decode(y)))))
       case URI_Path_Absolute(path_absolute) ⇒
         val p = uridecoder.decode(path_absolute.foldLeft("")((x, y) ⇒ x + "/" + y))
         val f = new java.io.File(p)
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ Map("directory" → f.getParent) ++
+        val d = f.getParent
+        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++
+          (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
           Map("segment" → path_absolute.foldLeft(List.empty[String])((x, y) ⇒ x ++ List(uridecoder.decode(y)))))
       case URI_Path_NoScheme(path_noscheme) ⇒
         val p = uridecoder.decode(path_noscheme.mkString("/"))
         val f = new java.io.File(p)
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ Map("directory" → f.getParent) ++
+        val d = f.getParent
+        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++
+          (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
           Map("segment" → path_noscheme.foldLeft(List.empty[String])((x, y) ⇒ x ++ List(uridecoder.decode(y)))))
       case URI_Path_Rootless(path_rootless) ⇒
         val p = uridecoder.decode(path_rootless.mkString("/"))
         val f = new java.io.File(p)
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ Map("directory" → f.getParent) ++
+        val d = f.getParent
+        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++
+          (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
           Map("segment" → path_rootless.foldLeft(List.empty[String])((x, y) ⇒ x ++ List(uridecoder.decode(y)))))
       case URI_Path_Empty(path_empty) ⇒ URIMap(Map("path" → path_empty))
       case URI_Host(rule) ⇒
