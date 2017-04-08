@@ -15,7 +15,7 @@
 */
 package org.arktos
 
-import org.arktos.URI.URIType
+import org.arktos.URI._
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Map
@@ -159,29 +159,37 @@ class evalURI {
       case URI_Path_AbEmpty(path_abempty) ⇒
         val p = uridecoder.decode(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y))
         val f = new java.io.File(p)
+        val i = f.getName.lastIndexOf(".")
+        val suffix = if (i >= 0 && i < f.getName.length - 1) f.getName.substring(i + 1) else ""
         val d = f.getParent
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++
+        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
           (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
           Map("segment" → path_abempty.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y))))
       case URI_Path_Absolute(path_absolute) ⇒
         val p = uridecoder.decode(path_absolute.foldLeft("")((x, y) ⇒ x + "/" + y))
         val f = new java.io.File(p)
+        val i = f.getName.lastIndexOf(".")
+        val suffix = if (i >= 0 && i < f.getName.length - 1) f.getName.substring(i + 1) else ""
         val d = f.getParent
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++
+        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
           (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
           Map("segment" → path_absolute.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y))))
       case URI_Path_NoScheme(path_noscheme) ⇒
         val p = uridecoder.decode(path_noscheme.mkString("/"))
         val f = new java.io.File(p)
+        val i = f.getName.lastIndexOf(".")
+        val suffix = if (i >= 0 && i < f.getName.length - 1) f.getName.substring(i + 1) else ""
         val d = f.getParent
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++
+        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
           (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
           Map("segment" → path_noscheme.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y))))
       case URI_Path_Rootless(path_rootless) ⇒
         val p = uridecoder.decode(path_rootless.mkString("/"))
         val f = new java.io.File(p)
+        val i = f.getName.lastIndexOf(".")
+        val suffix = if (i >= 0 && i < f.getName.length - 1) f.getName.substring(i + 1) else ""
         val d = f.getParent
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++
+        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
           (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
           Map("segment" → path_rootless.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y))))
       case URI_Path_Empty(path_empty) ⇒ URIMap(Map("path" → path_empty))
@@ -192,7 +200,6 @@ class evalURI {
           case URI_IPv4Address(ipv4address) ⇒ (hostname: @unchecked) match { case URIString(s) ⇒ URIMap(Map("hostname" → s) ++ Map("ipv4address" → s)) }
           case URI_Reg_Name(regname) ⇒ (hostname: @unchecked) match {
             case URIString(s) ⇒ URIMap(Map("hostname" → s) ++
-              Map("regname" → s) ++
               Map("domain" → s.split('.').toList.tail.mkString(".")) ++
               Map("subdomain" → s.split('.').toList.head) ++
               Map("tld" → s.split('.').toList.last))
@@ -248,7 +255,7 @@ class evalURI {
   private def traverseParameterList(l: Seq[URIAST], params: List[(String, String)]): List[(String, String)] = l match {
     case x +: xs ⇒ (eval(x): @unchecked) match {
       case URITuple((k, v)) ⇒ traverseParameterList(xs, params ::: (k, v) :: Nil)
-      case URIString(t)     ⇒ traverseParameterList(xs, params ::: (t, null) :: Nil)
+      case URIString(t)     ⇒ traverseParameterList(xs, params ::: (t, "") :: Nil)
     }
     case Nil ⇒ params
   }
