@@ -19,6 +19,7 @@ import org.arktos.URI._
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Map
+import scala.collection.mutable.ListBuffer
 
 object evalURI {
   def apply() = new evalURI()
@@ -75,7 +76,7 @@ class evalURI {
           case (URIMap(m1), URIMap(m2), URIString(s), URIMap(m4))     ⇒ URIMap(m1 ++ m2 ++ m4)
           case (URIMap(m1), URIMap(m2), URIString(s3), URIString(s4)) ⇒ URIMap(m1 ++ m2)
         }): @unchecked) match {
-          case URIMap(m) ⇒ URIMap(m ++ Map("uri_type" → "absolute"))
+          case URIMap(m) ⇒ URIMap(m + "uri_type" → "absolute")
         }
       case URI_Relative_Ref(relative_part, query, fragment) ⇒
         ((((
@@ -94,18 +95,18 @@ class evalURI {
           case (URIMap(m1), URIString(s2), URIMap(m3))    ⇒ URIMap(m1 ++ m3)
           case (URIMap(m1), URIString(s2), URIString(s3)) ⇒ URIMap(m1)
         }): @unchecked) match {
-          case URIMap(m) ⇒ URIMap(m ++ Map("uri_type" → "relative"))
+          case URIMap(m) ⇒ URIMap(m + "uri_type" → "relative")
         }
       case URI_Relative_Part(authority, path) ⇒
         ((eval(authority), eval(path)): @unchecked) match { case (URIMap(m1), URIMap(m2)) ⇒ URIMap(m1 ++ m2) }
       case URI_Relative_Part_Path(path) ⇒ eval(path)
-      case URI_Scheme(s)                ⇒ URIMap(Map("scheme" → s) ++ Map("protocol" → protocols.find(_ == s.toLowerCase).getOrElse("")))
+      case URI_Scheme(s)                ⇒ URIMap(Map("scheme" → s) + "protocol" → protocols.find(_ == s.toLowerCase).getOrElse(""))
       case URI_Hier_Part_Absolute(authority, path) ⇒
         ((
           eval(authority),
           eval(path)
         ): @unchecked) match {
-          case (URIMap(m1), URIMap(m2)) ⇒ URIMap(Map("scheme_postfix" → "//") ++ m1 ++ m2)
+          case (URIMap(m1), URIMap(m2)) ⇒ URIMap(m1 ++ m2 + "scheme_postfix" → "//")
         }
       case URI_Hier_Part_Path(path) ⇒ eval(path)
       case URI_Reference(rule)      ⇒ eval(rule)
@@ -122,7 +123,7 @@ class evalURI {
           case (URIMap(m1), URIMap(m2), URIString(s))     ⇒ URIMap(m1 ++ m2)
           case (URIMap(m1), URIString(s2), URIString(s3)) ⇒ URIMap(m1)
         }): @unchecked) match {
-          case URIMap(m) ⇒ URIMap(m ++ Map("uri_type" → "absolute"))
+          case URIMap(m) ⇒ URIMap(m + "uri_type" → "absolute")
         }
       case URI_Authority(userinfo, host, port) ⇒
         ((userinfo match {
@@ -132,24 +133,24 @@ class evalURI {
           case Some(p) ⇒ eval(p)
           case None    ⇒ URIString("")
         }): @unchecked) match {
-          case (URIMap(m1), URIMap(m2), URIMap(m3)) ⇒ URIMap(m1 ++ m2 ++ m3 ++
-            Map("authority" → (m1("userinfo") + "@" + m2("hostname") + ":" + m3("port"))) ++
-            Map("host" → (m2("hostname") + ":" + m3("port"))))
-          case (URIMap(m1), URIMap(m2), URIString(s)) ⇒ URIMap(m1 ++ m2 ++
-            Map("authority" → ((m1("userinfo") + "@" + m2("hostname")))) ++
-            Map("host" → (m2("hostname"))))
-          case (URIString(s), URIMap(m2), URIMap(m3)) ⇒ URIMap(m2 ++ m3 ++
-            Map("authority" → (m2("hostname") + ":" + m3("port"))) ++
-            Map("host" → (m2("hostname") + ":" + m3("port"))))
-          case (URIString(s1), URIMap(m2), URIString(s3)) ⇒ URIMap(m2 ++ Map("authority" → m2("hostname")) ++ Map("host" → m2("hostname")))
+          case (URIMap(m1), URIMap(m2), URIMap(m3)) ⇒ URIMap(m1 ++ m2 ++ m3 +
+            "authority" → (m1("userinfo") + "@" + m2("hostname") + ":" + m3("port")) +
+            "host" → (m2("hostname") + ":" + m3("port")))
+          case (URIMap(m1), URIMap(m2), URIString(s)) ⇒ URIMap(m1 ++ m2 +
+            "authority" → ((m1("userinfo") + "@" + m2("hostname"))) +
+            "host" → (m2("hostname")))
+          case (URIString(s), URIMap(m2), URIMap(m3)) ⇒ URIMap(m2 ++ m3 +
+            "authority" → (m2("hostname") + ":" + m3("port")) +
+            "host" → (m2("hostname") + ":" + m3("port")))
+          case (URIString(s1), URIMap(m2), URIString(s3)) ⇒ URIMap(m2 + "authority" → m2("hostname") + "host" → m2("hostname"))
         }
       case URI_UserInfo(user, password) ⇒
         ((eval(user), password match {
           case Some(p) ⇒ eval(p)
           case None    ⇒ URIString("")
         }): @unchecked) match {
-          case (URIMap(m1), URIMap(m2))   ⇒ URIMap(m1 ++ m2 ++ Map("userinfo" → (m1("user") + ":" + m2("password"))))
-          case (URIMap(m1), URIString(s)) ⇒ URIMap(m1 ++ Map("userinfo" → m1("user")))
+          case (URIMap(m1), URIMap(m2))   ⇒ URIMap(m1 ++ m2 + "userinfo" → (m1("user") + ":" + m2("password")))
+          case (URIMap(m1), URIString(s)) ⇒ URIMap(m1 + "userinfo" → m1("user"))
         }
       case URI_User(user)         ⇒ URIMap(Map("user" → uridecoder.decode(user)))
       case URI_Password(password) ⇒ URIMap(Map("password" → uridecoder.decode(password)))
@@ -159,79 +160,83 @@ class evalURI {
       case URI_Path_AbEmpty(path_abempty) ⇒
         val p = uridecoder.decode(path_abempty.foldLeft("")((x, y) ⇒ x + "/" + y))
         val f = new java.io.File(p)
-        val i = f.getName.lastIndexOf(".")
-        val suffix = if (i >= 0 && i < f.getName.length - 1) f.getName.substring(i + 1) else ""
-        val d = f.getParent
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
-          (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
-          Map("segment" → path_abempty.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y))))
+        val name = f.getName
+        val i = name.lastIndexOf(".")
+        val suffix = if (i >= 0 && i < name.length - 1) name.substring(i + 1) else ""
+        val d = f.getPath.dropRight(name.length)
+        URIMap(Map("path" → p) ++ (if (name.length > 0) Map("filename" → name) else Map.empty: URIType) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
+          (if (d != null) Map("directory" → d) else Map.empty: URIType) +
+          "segment" → path_abempty.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y)))
       case URI_Path_Absolute(path_absolute) ⇒
         val p = uridecoder.decode(path_absolute.foldLeft("")((x, y) ⇒ x + "/" + y))
         val f = new java.io.File(p)
-        val i = f.getName.lastIndexOf(".")
-        val suffix = if (i >= 0 && i < f.getName.length - 1) f.getName.substring(i + 1) else ""
-        val d = f.getParent
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
-          (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
-          Map("segment" → path_absolute.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y))))
+        val name = f.getName
+        val i = name.lastIndexOf(".")
+        val suffix = if (i >= 0 && i < name.length - 1) name.substring(i + 1) else ""
+        val d = f.getPath.dropRight(name.length)
+        URIMap(Map("path" → p) ++ (if (name.length > 0) Map("filename" → name) else Map.empty: URIType) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
+          (if (d != null) Map("directory" → d) else Map.empty: URIType) +
+          "segment" → path_absolute.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y)))
       case URI_Path_NoScheme(path_noscheme) ⇒
         val p = uridecoder.decode(path_noscheme.mkString("/"))
         val f = new java.io.File(p)
-        val i = f.getName.lastIndexOf(".")
-        val suffix = if (i >= 0 && i < f.getName.length - 1) f.getName.substring(i + 1) else ""
-        val d = f.getParent
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
-          (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
-          Map("segment" → path_noscheme.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y))))
+        val name = f.getName
+        val i = name.lastIndexOf(".")
+        val suffix = if (i >= 0 && i < name.length - 1) name.substring(i + 1) else ""
+        val d = f.getPath.dropRight(name.length)
+        URIMap(Map("path" → p) ++ (if (name.length > 0) Map("filename" → name) else Map.empty: URIType) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
+          (if (d != null) Map("directory" → d) else Map.empty: URIType) +
+          "segment" → path_noscheme.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y)))
       case URI_Path_Rootless(path_rootless) ⇒
         val p = uridecoder.decode(path_rootless.mkString("/"))
         val f = new java.io.File(p)
-        val i = f.getName.lastIndexOf(".")
-        val suffix = if (i >= 0 && i < f.getName.length - 1) f.getName.substring(i + 1) else ""
-        val d = f.getParent
-        URIMap(Map("path" → p) ++ Map("filename" → f.getName) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
-          (if (d != null) Map("directory" → f.getParent) else Map.empty: URIType) ++
-          Map("segment" → path_rootless.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y))))
+        val name = f.getName
+        val i = name.lastIndexOf(".")
+        val suffix = if (i >= 0 && i < name.length - 1) name.substring(i + 1) else ""
+        val d = f.getPath.dropRight(name.length)
+        URIMap(Map("path" → p) ++ (if (name.length > 0) Map("filename" → name) else Map.empty: URIType) ++ (if (i >= 0) Map("suffix" → suffix) else Map.empty: URIType) ++
+          (if (d != null) Map("directory" → d) else Map.empty: URIType) +
+          "segment" → path_rootless.foldLeft(List.empty[String])((x, y) ⇒ x :+ uridecoder.decode(y)))
       case URI_Path_Empty(path_empty) ⇒ URIMap(Map("path" → path_empty))
       case URI_Host(rule) ⇒
         val hostname = eval(rule)
         (rule: @unchecked) match {
-          case URI_IP_Literal(literal)      ⇒ (hostname: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("hostname" → m("ipliteral"))) }
-          case URI_IPv4Address(ipv4address) ⇒ (hostname: @unchecked) match { case URIString(s) ⇒ URIMap(Map("hostname" → s) ++ Map("ipv4address" → s)) }
+          case URI_IP_Literal(literal)      ⇒ (hostname: @unchecked) match { case URIMap(m) ⇒ URIMap(m + "hostname" → m("ipliteral")) }
+          case URI_IPv4Address(ipv4address) ⇒ (hostname: @unchecked) match { case URIString(s) ⇒ URIMap(Map("hostname" → s) + "ipv4address" → s) }
           case URI_Reg_Name(regname) ⇒ (hostname: @unchecked) match {
-            case URIString(s) ⇒ URIMap(Map("hostname" → s) ++
-              Map("domain" → s.split('.').toList.tail.mkString(".")) ++
-              Map("subdomain" → s.split('.').toList.head) ++
-              Map("tld" → s.split('.').toList.last))
+            case URIString(s) ⇒
+              val l = s.split('.').toList
+              val domain = if (l.length > 2) l.tail else l
+              URIMap(Map("hostname" → s) + "domain" → domain.mkString(".") ++ (if (l.length > 2) Map("subdomain" → l.head) else Map.empty: URIType) + "tld" → domain.last)
           }
         }
       case URI_IP_Literal(ipLiteral) ⇒
         val literal = eval(ipLiteral)
         (ipLiteral: @unchecked) match {
-          case URI_IPv6Address(ip)                   ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("ipliteral" → ("[" + m("ipv6address") + "]"))) }
-          case URI_IPv6AddressZ(address, zone)       ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("ipliteral" → ("[" + m("ipv6addressz") + "]"))) }
-          case URI_IPvFuture(ip)                     ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("ipliteral" → ("[v" + m("ipvfuture") + "]"))) }
-          case URI_IPvFutureLinkLocal(address, zone) ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m ++ Map("ipliteral" → ("[v1." + m("ipvfuturelinklocal") + "]"))) }
+          case URI_IPv6Address(ip)                   ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m + "ipliteral" → ("[" + m("ipv6address") + "]")) }
+          case URI_IPv6AddressZ(address, zone)       ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m + "ipliteral" → ("[" + m("ipv6addressz") + "]")) }
+          case URI_IPvFuture(ip)                     ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m + "ipliteral" → ("[v" + m("ipvfuture") + "]")) }
+          case URI_IPvFutureLinkLocal(address, zone) ⇒ (literal: @unchecked) match { case URIMap(m) ⇒ URIMap(m + "ipliteral" → ("[v1." + m("ipvfuturelinklocal") + "]")) }
         }
       case URI_IPvFuture(ipvfuture) ⇒ URIMap(Map("ipvfuture" → ipvfuture))
       case URI_IPvFutureLinkLocal(ipv6Address, zoneID) ⇒ ((eval(ipv6Address), eval(zoneID)): @unchecked) match {
-        case (URIMap(m1), URIString(z)) ⇒ URIMap(Map("ipvfuturelinklocal" → (m1("ipv6Address").toString + "%" + z)) ++ Map("zoneid" → z))
+        case (URIMap(m1), URIString(z)) ⇒ URIMap(Map("ipvfuturelinklocal" → (m1("ipv6Address").toString + "%" + z)) + "zoneid" → z)
       }
       case URI_ZoneID(zoneID)       ⇒ URIString(uridecoder.decode(zoneID))
       case URI_IPv6Address(address) ⇒ URIMap(Map("ipv6address" → address))
       case URI_IPv6AddressZ(address, zone) ⇒
         val ipv6Address = ((eval(address): @unchecked) match { case URIMap(m) ⇒ m("ipv6address") })
         val zoneid = (eval(zone): @unchecked) match { case URIString(z) ⇒ z }
-        URIMap(Map("ipv6addressz" → (ipv6Address + "%" + zoneid)) ++ Map("zoneid" → zoneid))
+        URIMap(Map("ipv6addressz" → (ipv6Address + "%" + zoneid)) + "zoneid" → zoneid)
       case URI_IPv4Address(address) ⇒ URIString(address)
       case URI_Query(rule) ⇒
-        val params = traverseParameterList(rule, Nil)
+        val params = traverseParameterList(rule, new ListBuffer[(String, String)])
         val decoded_params = params.map((x) ⇒ (uridecoder.decode(x._1), if (x._2 != null) uridecoder.decode(x._2) else x._2))
         URIMap(
-          Map("params" → decoded_params) ++
-            Map("raw_params" → params) ++
-            Map("query" → (params.map((x) ⇒ uridecoder.decode(x._1) + (if (x._2 != null) "=" + uridecoder.decode(x._2) else "")).mkString("&"))) ++
-            Map("raw_query" → (params.map((x) ⇒ x._1 + (if (x._2 != null) "=" + x._2 else "")).mkString("&")))
+          Map("params" → decoded_params) +
+            "raw_params" → params +
+            "query" → (params.map((x) ⇒ uridecoder.decode(x._1) + (if (x._2 != null) "=" + uridecoder.decode(x._2) else "")).mkString("&")) +
+            "raw_query" → (params.map((x) ⇒ x._1 + (if (x._2 != null) "=" + x._2 else "")).mkString("&"))
         )
       case URI_QueryParameter(queryVariable, queryValue) ⇒
         ((eval(queryVariable), eval(queryValue)): @unchecked) match {
@@ -243,20 +248,20 @@ class evalURI {
       case URI_Fragment(fragment) ⇒
         val decoded_fragment = uridecoder.decode(fragment)
         URIMap(
-          Map("fragment" → decoded_fragment) ++
-            Map("hash" → ("#" + decoded_fragment)) ++
-            Map("raw_fragment" → fragment)
+          Map("fragment" → decoded_fragment) +
+            "hash" → ("#" + decoded_fragment) +
+            "raw_fragment" → fragment
         )
       case Error(e) ⇒ URIString("Error" + e)
     }
   }
 
   @tailrec
-  private def traverseParameterList(l: Seq[URIAST], params: List[(String, String)]): List[(String, String)] = l match {
+  private def traverseParameterList(l: Seq[URIAST], params: ListBuffer[(String, String)]): List[(String, String)] = l match {
     case x +: xs ⇒ (eval(x): @unchecked) match {
-      case URITuple((k, v)) ⇒ traverseParameterList(xs, params ::: (k, v) :: Nil)
-      case URIString(t)     ⇒ traverseParameterList(xs, params ::: (t, "") :: Nil)
+      case URITuple((k, v)) ⇒ traverseParameterList(xs, params += ((k, v)))
+      case URIString(t)     ⇒ traverseParameterList(xs, params += ((t, "")))
     }
-    case Nil ⇒ params
+    case Nil ⇒ params.toList
   }
 }
