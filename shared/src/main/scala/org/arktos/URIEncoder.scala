@@ -19,6 +19,7 @@ package org.arktos
 import java.io.ByteArrayOutputStream
 
 import scala.annotation.tailrec
+import org.parboiled2.CharPredicate
 
 /*
  * Utility class for URI encoding.
@@ -68,7 +69,9 @@ object URIEncoder {
 
 class URIEncoder {
 
-  def encode(s: String, charset: String = "UTF-8"): String = {
+  def encode(s: String, predicate: CharPredicate = notEncoded, blankAsPlus: Boolean = false, charset: String = "UTF-8"): String = {
+
+    val predicateMasked = predicate.asMaskBased
 
     val iterator: Iterator[Byte] = s.getBytes(charset).iterator
 
@@ -93,14 +96,7 @@ class URIEncoder {
     while (iterator.hasNext) {
       val byte = iterator.next
 
-      if ((byte & 0x80) == 0 &&
-        ((byte >= '0' && byte <= '9') ||
-          (byte >= 'A' && byte <= 'Z') ||
-          (byte >= 'a' && byte <= 'z') ||
-          byte == '-' ||
-          byte == '.' ||
-          byte == '_' ||
-          byte == '~')) {
+      if ((byte & 0x80) == 0 && predicateMasked(byte.toChar)) {
         /* write single byte character encoded into two hexadecimal characters
          * (first nibble and second nibble) to ByteArrayOutputStream
          */
@@ -109,11 +105,12 @@ class URIEncoder {
         /* write first byte of a multi-byte character encoded into two hexadecimal characters
          * (first nibble and second nibble) to ByteArrayOutputStream
          */
-        writeHexEncodedCharPart(byte)
+        if (blankAsPlus && byte == ' ') writeHexEncodedCharPart('+')
+        else writeHexEncodedCharPart(byte)
         /* recursively write all remaining bytes of a multi-byte character
          * each byte encoded into two hexadecimal characters
          * (first nibble and second nibble) to ByteArrayOutputStream */
-        writeHexRepresentationOfMultiByteChar(byte, 1)
+        if ((byte & 0x80) != 0) writeHexRepresentationOfMultiByteChar(byte, 1)
       }
     }
     bos.toString("UTF-8")

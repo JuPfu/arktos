@@ -1,6 +1,6 @@
 package org.arktos
 
-import org.arktos.URI.URIType
+import scala.annotation.tailrec
 
 object URI {
   type URIType = Map[String, Any]
@@ -10,9 +10,13 @@ object URI {
   val encoder = new URIEncoder()
 
   def get = Map.empty: URIType
+  def get(u: String) = {
+    val parsedURI = URIParser(u)
+    if (parsedURI.isSuccess) parsedURI.get else Map.empty: URIType
+  }
 
   def build(uri: URIType): String = {
-    (if (uri.contains("scheme")) (uri("scheme") + ":") else "") +
+    (if (uri.contains("scheme")) (uri("scheme") + ":") else (if (uri.contains("protocol")) uri("protocol") + ":" else "")) +
       (if (uri.contains("authority")) {
         "//" + uri("authority")
       } else {
@@ -24,24 +28,23 @@ object URI {
                 uri("user") + (if (uri.contains("password")) { ":" + uri("password") } else "") + "@"
               } else ""
             }) +
-            uri("host") +
-            (if (uri.contains("port")) { ":" + uri("port") } else "")
+            encoder.encode(uri("host").toString, notEncoded)
         } else {
           if (uri.contains("ipv4address")) uri("ipv4address")
           else if (uri.contains("ipv6address")) { "[" + uri("ipv6address") + "]" }
           else if (uri.contains("ipv6addressz")) { "[" + uri("ipv6addressz") + "]" }
           else if (uri.contains("ipvfuture")) { "[v" + uri("ipvfuture") + "]" }
           else if (uri.contains("ipvfuturelinklocal")) { "[v1" + uri("ipvfuturelinklocal") + "]" }
-          else if (uri.contains("regname")) uri("regname")
-          else ""
+          else if (uri.contains("hostname")) {
+            encoder.encode(uri("hostname").toString, notEncoded) +
+              (if (uri.contains("port")) { ":" + uri("port") } else "")
+          } else ""
         }
       }) +
-      uri.getOrElse("path", "") +
-      (if (uri.contains("params")) ("?" + (uri("params").asInstanceOf[List[(String, String)]].map({ case (k, null) ⇒ k; case (k, v) ⇒ k + "=" + encoder.encode(v) }).mkString("&"))) else "") +
-      (if (uri.contains("hash")) uri("hash") else (if (uri.contains("fragment")) { "#" + uri("fragment") } else ""))
+      encoder.encode(uri.getOrElse("path", "").toString) +
+      (if (uri.contains("params")) ("?" + (uri("params").asInstanceOf[List[(String, String)]].map({ case (k, "") ⇒ k; case (k, v) ⇒ encoder.encode(k, notEncoded -- '=', true) + "=" + encoder.encode(v, notEncoded -- '=', true) }).mkString("&"))) else "") +
+      (if (uri.contains("fragment")) { "#" + encoder.encode(uri("fragment").toString, notEncoded ++ ' ') } else "")
   }
-
-  //implicit def convertString(m: Option[String]): String = m match { case Some(s) ⇒ s; case _ ⇒ "" }
 
   implicit class MapExtender(val m: URIType) extends AnyVal {
 
@@ -56,6 +59,7 @@ object URI {
 
     def setParams(p: Map[String, List[String]]) = {
       val r: List[(String, String)] = List()
+      @tailrec
       def kFactor(k: String)(l: List[String], r: List[(String, String)]): List[(String, String)] = l match {
         case x :: xs ⇒ kFactor(k)(xs, r :+ ((k, x)))
         case default ⇒ r
@@ -74,6 +78,7 @@ object URI {
   implicit class ParamsMapExtender(val m: ParamsMapType) extends AnyVal {
     def toParamsList = {
       val r: List[(String, String)] = List()
+      @tailrec
       def kFactor(k: String)(l: List[String], r: List[(String, String)]): List[(String, String)] = l match {
         case x :: xs ⇒ kFactor(k)(xs, r :+ ((k, x)))
         case default ⇒ r
