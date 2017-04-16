@@ -42,7 +42,7 @@ object URI {
         }
       }) +
       encoder.encode(uri.getOrElse("path", "").toString) +
-      (if (uri.contains("params")) ("?" + (uri("params").asInstanceOf[List[(String, String)]].map({ case (k, "") ⇒ k; case (k, v) ⇒ encoder.encode(k, notEncoded -- '=', true) + "=" + encoder.encode(v, notEncoded -- '=', true) }).mkString("&"))) else "") +
+      (if (uri.contains("params")) ("?" + (uri.getParamsAsList().map({ case (k, "") ⇒ k; case (k, v) ⇒ encoder.encode(k, notEncoded -- '=', true) + "=" + encoder.encode(v, notEncoded -- '=', true) }).mkString("&"))) else "") +
       (if (uri.contains("fragment")) { "#" + encoder.encode(uri("fragment").toString, notEncoded ++ ' ') } else "")
   }
 

@@ -73,7 +73,7 @@ class URIEncoder {
 
     val predicateMasked = predicate.asMaskBased
 
-    val iterator: Iterator[Byte] = s.getBytes(charset).iterator
+    val iterator: Iterator[Byte] = s.getBytes("UTF-8").iterator
 
     val bos = new ByteArrayOutputStream(1024)
 
@@ -96,23 +96,27 @@ class URIEncoder {
     while (iterator.hasNext) {
       val byte = iterator.next
 
-      if ((byte & 0x80) == 0 && predicateMasked(byte.toChar)) {
-        /* write single byte character encoded into two hexadecimal characters
+      if ((byte & 0x80) == 0) {
+        if (predicateMasked(byte.toChar)) {
+          /* write single byte character encoded into two hexadecimal characters
          * (first nibble and second nibble) to ByteArrayOutputStream
          */
-        bos.write(byte)
+          bos.write(byte)
+        } else {
+          if (blankAsPlus && byte == ' ') writeHexEncodedCharPart('+')
+          else writeHexEncodedCharPart(byte)
+        }
       } else {
         /* write first byte of a multi-byte character encoded into two hexadecimal characters
          * (first nibble and second nibble) to ByteArrayOutputStream
          */
-        if (blankAsPlus && byte == ' ') writeHexEncodedCharPart('+')
-        else writeHexEncodedCharPart(byte)
+        writeHexEncodedCharPart(byte)
         /* recursively write all remaining bytes of a multi-byte character
          * each byte encoded into two hexadecimal characters
          * (first nibble and second nibble) to ByteArrayOutputStream */
-        if ((byte & 0x80) != 0) writeHexRepresentationOfMultiByteChar(byte, 1)
+        writeHexRepresentationOfMultiByteChar(byte, 1)
       }
     }
-    bos.toString("UTF-8")
+    bos.toString(charset)
   }
 }
