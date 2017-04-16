@@ -101,7 +101,7 @@ class IRIParser(input: ParserInput) extends URIParser(input: ParserInput) {
   //segment-nz-nc = 1*( unreserved / pct-encoded / sub-delims / "@" ) ; non-zero-length segment without any ':' ":"
   override def segment_nz_nc = rule { (unreserved | pct_encoded | sub_delims | '@' | ucschar_supplement).+ }
 
-  override def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' | ucschar_supplement | `private` }
+  override def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' | ucschar_supplement | `private` | fail("encoded query character") }
 }
 
 object IRIParser {

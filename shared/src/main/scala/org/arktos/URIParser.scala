@@ -221,7 +221,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def segment_nz_nc = rule { (unreserved | pct_encoded | sub_delims | '@').+ }
 
   // pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-  def pchar = rule { unreserved | pct_encoded | sub_delims | ':' | '@' }
+  def pchar = rule { unreserved | pct_encoded | sub_delims | ':' | '@' | fail("path character")}
 
   // query         = *( ipchar / iprivate / "/" / "?" )
   // def query = rule { capture((pchar | '/' | '?').*) ~> URI_Query }
@@ -230,7 +230,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def queryVariable = rule { capture((qchar | '/' | '?').+) ~> URI_QueryVariable }
   def queryValue = rule { capture((qchar | '/' | '?').*) ~> URI_QueryValue }
   def queryToken = rule { capture((qchar | '/' | '?').+) ~> URI_QueryToken }
-  def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' }
+  def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' | fail("encoded query character") }
 
   // fragment      = *( pchar / "/" / "?" )
   def fragment = rule { capture((pchar | '/' | '?').*) ~> URI_Fragment }

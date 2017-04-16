@@ -79,7 +79,7 @@ class IRISpec extends FlatSpec {
     testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=%C3%85M%C3%85%C5%BD%C3%95%C3%91&url=search-alias%3Daps&field-keywords=scala+odersky""", """http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=ÅMÅŽÕÑ&url=search-alias=aps&field-keywords=scala+odersky""")
   }
 
-  """The URI 'http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=ÅMÅŽÕÑ&url=search-alias=aps&field-keywords=scala+odersky'""" must "succeed" taggedAs (rfc3986) in {
+  """The URI 'http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=ÅMÅŽÕÑ&url=search-alias%3Daps&field-keywords=scala+odersky'""" must "succeed" taggedAs (rfc3986) in {
     testURI("""http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=ÅMÅŽÕÑ&url=search-alias=aps&field-keywords=scala+odersky""", """http://www.amazon.de/s/ref=nb_sb_noss/279-9128198-5070906?__mk_de_DE=ÅMÅŽÕÑ&url=search-alias=aps&field-keywords=scala+odersky""")
   }
 }
