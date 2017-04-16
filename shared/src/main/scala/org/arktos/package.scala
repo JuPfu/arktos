@@ -22,7 +22,7 @@ import org.parboiled2.CharPredicate.AlphaNum
 package object arktos {
   val arktos_version = "Arktos version 0.9"
 
-  /* 11th March 2015 surrogate treatment lent from discussion at
+  /* Surrogate treatment lent from discussion at
    https://gitter.im/sirthias/parboiled2?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge */
   val isHighSurrogate = CharPredicate.from(Character.isHighSurrogate)
   val isLowSurrogate = CharPredicate.from(Character.isLowSurrogate)
@@ -39,7 +39,4 @@ package object arktos {
   val reserved = gen_delims ++ sub_delims
 
   val notEncoded = unreserved ++ reserved ++ query_delims
-
-  // default characters to not encode
-  //val predicateMasked = notEncoded
 }

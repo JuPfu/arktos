@@ -40,7 +40,7 @@ val formattingSettings = scalariformSettings ++ Seq(
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(DoubleIndentClassDeclaration, true))
 
-/*
+
 scalatex.SbtPlugin.projectSettings
 
 lazy val readme = scalatex.ScalatexReadme(
@@ -49,7 +49,6 @@ lazy val readme = scalatex.ScalatexReadme(
   url = "https://github.com/lihaoyi/scalatex/tree/master",
   source = "Readme"
 )
-*/
 
 /////////////////////// PROJECTS /////////////////////////
 
