@@ -221,7 +221,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def segment_nz_nc = rule { (unreserved | pct_encoded | sub_delims | '@').+ }
 
   // pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-  def pchar = rule { unreserved | pct_encoded | sub_delims | ':' | '@' | fail("path character")}
+  def pchar = rule { unreserved | pct_encoded | sub_delims | ':' | '@' }
 
   // query         = *( ipchar / iprivate / "/" / "?" )
   // def query = rule { capture((pchar | '/' | '?').*) ~> URI_Query }
