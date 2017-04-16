@@ -1,6 +1,7 @@
 package org.arktos
 
 import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 object URI {
   type URIType = Map[String, Any]
@@ -58,14 +59,14 @@ object URI {
     }
 
     def setParams(p: Map[String, List[String]]) = {
-      val r: List[(String, String)] = List()
+      val r: ListBuffer[(String, String)] = ListBuffer()
       @tailrec
-      def kFactor(k: String)(l: List[String], r: List[(String, String)]): List[(String, String)] = l match {
+      def kFactor(k: String)(l: List[String], r: ListBuffer[(String, String)]): ListBuffer[(String, String)] = l match {
         case x :: xs ⇒ kFactor(k)(xs, r :+ ((k, x)))
         case default ⇒ r
       }
 
-      m.updated("params", p.foldLeft(List.empty: List[(String, String)])((x, y) ⇒ x ::: kFactor(y._1)(y._2, List())))
+      m.updated("params", p.foldLeft(ListBuffer.empty: ListBuffer[(String, String)])((x, y) ⇒ x ++ kFactor(y._1)(y._2, ListBuffer()))).toList
     }
   }
 
@@ -77,13 +78,13 @@ object URI {
 
   implicit class ParamsMapExtender(val m: ParamsMapType) extends AnyVal {
     def toParamsList = {
-      val r: List[(String, String)] = List()
+      val r: ListBuffer[(String, String)] = ListBuffer()
       @tailrec
-      def kFactor(k: String)(l: List[String], r: List[(String, String)]): List[(String, String)] = l match {
+      def kFactor(k: String)(l: List[String], r: ListBuffer[(String, String)]): ListBuffer[(String, String)] = l match {
         case x :: xs ⇒ kFactor(k)(xs, r :+ ((k, x)))
         case default ⇒ r
       }
-      m.foldLeft(List.empty: List[(String, String)])((x, y) ⇒ x ::: kFactor(y._1)(y._2, List()))
+      m.foldLeft(ListBuffer.empty: ListBuffer[(String, String)])((x, y) ⇒ x ++ kFactor(y._1)(y._2, ListBuffer())).toList
     }
   }
 }
