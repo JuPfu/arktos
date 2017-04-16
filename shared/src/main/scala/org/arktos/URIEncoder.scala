@@ -98,11 +98,11 @@ class URIEncoder {
 
       if ((byte & 0x80) == 0) {
         if (predicateMasked(byte.toChar)) {
-          /* write single byte character encoded into two hexadecimal characters
-         * (first nibble and second nibble) to ByteArrayOutputStream
-         */
           bos.write(byte)
         } else {
+          /* write single byte character encoded into two hexadecimal characters
+           * (first nibble and second nibble) to ByteArrayOutputStream
+           */
           if (blankAsPlus && byte == ' ') writeHexEncodedCharPart('+')
           else writeHexEncodedCharPart(byte)
         }
