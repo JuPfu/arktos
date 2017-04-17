@@ -11,40 +11,14 @@ object URI {
   val encoder = new URIEncoder()
 
   def get = Map.empty: URIType
+
   def get(u: String) = {
     val parsedURI = URIParser(u)
     if (parsedURI.isSuccess) parsedURI.get else Map.empty: URIType
   }
 
-  def build(uri: URIType): String = {
-    (if (uri.contains("scheme")) (uri("scheme") + ":") else (if (uri.contains("protocol")) uri("protocol") + ":" else "")) +
-      (if (uri.contains("authority")) {
-        "//" + uri("authority")
-      } else {
-        if (uri.contains("host")) {
-          "//" +
-            (if (uri.contains("userinfo")) { uri("userinfo") + "@" }
-            else {
-              if (uri.contains("user")) {
-                uri("user") + (if (uri.contains("password")) { ":" + uri("password") } else "") + "@"
-              } else ""
-            }) +
-            encoder.encode(uri("host").toString, notEncoded)
-        } else {
-          if (uri.contains("ipv4address")) uri("ipv4address")
-          else if (uri.contains("ipv6address")) { "[" + uri("ipv6address") + "]" }
-          else if (uri.contains("ipv6addressz")) { "[" + uri("ipv6addressz") + "]" }
-          else if (uri.contains("ipvfuture")) { "[v" + uri("ipvfuture") + "]" }
-          else if (uri.contains("ipvfuturelinklocal")) { "[v1" + uri("ipvfuturelinklocal") + "]" }
-          else if (uri.contains("hostname")) {
-            encoder.encode(uri("hostname").toString, notEncoded) +
-              (if (uri.contains("port")) { ":" + uri("port") } else "")
-          } else ""
-        }
-      }) +
-      encoder.encode(uri.getOrElse("path", "").toString) +
-      (if (uri.contains("params")) ("?" + (uri.getParamsAsList().map({ case (k, "") ⇒ k; case (k, v) ⇒ encoder.encode(k, notEncoded -- '=', true) + "=" + encoder.encode(v, notEncoded -- '=', true) }).mkString("&"))) else "") +
-      (if (uri.contains("fragment")) { "#" + encoder.encode(uri("fragment").toString, notEncoded ++ ' ') } else "")
+  def build(uri: URIType, builder: URIType ⇒ String = URIBuilder.builder): String = {
+    builder(uri)
   }
 
   implicit class MapExtender(val m: URIType) extends AnyVal {
