@@ -74,7 +74,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
     '\u200C' to '\u200D', '\u2070' to '\u218F', '\u2C00' to '\u2FeF', '\u3001' to '\uD7FF', '\uF900' to '\uFDCF', '\uFDF0' to '\uFFFD')
 
   // URI           = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
-  def URI = rule { scheme ~ ':' ~ hier_part ~ ('?' ~ query).? ~ ('#' ~ fragment).? ~> URI_URI }
+  def URI = rule { scheme ~ ':' ~!~ hier_part ~ ('?' ~ query).? ~ ('#' ~ fragment).? ~> URI_URI }
 
   // hier-part     = "//" authority path-abempty / path-absolute / path-rootless / path-empty
   def hier_part = rule {
@@ -86,10 +86,10 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def URI_reference = rule { (URI | relative_ref) ~ EOI ~> URI_Reference }
 
   // absolute-URI  = scheme ":" hier-part [ "?" query ]
-  def absolute_URI = rule { scheme ~ ':' ~ hier_part ~ ('?' ~ query).? ~> URI_AbsoluteURI }
+  def absolute_URI = rule { scheme ~ ':' ~!~ hier_part ~ ('?' ~!~ query).? ~> URI_AbsoluteURI }
 
   // relative-ref  = relative-part [ "?" query ] [ "#" fragment ]
-  def relative_ref = rule { relative_part ~ ('?' ~ query).? ~ ('#' ~ fragment).? ~> URI_Relative_Ref }
+  def relative_ref = rule { relative_part ~ ('?' ~!~ query).? ~ ('#' ~ fragment).? ~> URI_Relative_Ref }
 
   // relative-part = "//" authority path-abempty / path-absolute / path-noscheme / path-empty
   def relative_part = rule {
@@ -101,7 +101,7 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   def scheme = rule { atomic(capture(Alpha ~ scheme_char.*)) ~> URI_Scheme }
 
   // authority     = [ userinfo "@" ] host [ ":" port ]
-  def authority = rule { (userinfo ~ '@').? ~ host ~ (':' ~ port).? ~> URI_Authority }
+  def authority = rule { (userinfo ~ '@').? ~ host ~ (':' ~!~ port).? ~> URI_Authority }
 
   // userinfo      = user [ ":" password ]
   def userinfo = rule { user ~ (':' ~ password).? ~> URI_UserInfo }
@@ -227,13 +227,13 @@ class URIParser(val input: ParserInput) extends Parser with StringBuilding {
   // def query = rule { capture((pchar | '/' | '?').*) ~> URI_Query }
   def query = rule { (queryParameter | queryToken).*('&') ~> URI_Query }
   def queryParameter = rule { queryVariable ~ '=' ~ queryValue ~> URI_QueryParameter }
-  def queryVariable = rule { capture((qchar | '/' | '?').+) ~> URI_QueryVariable }
-  def queryValue = rule { capture((qchar | '/' | '?').*) ~> URI_QueryValue }
-  def queryToken = rule { capture((qchar | '/' | '?').+) ~> URI_QueryToken }
-  def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' | fail("encoded query character") }
+  def queryVariable = rule { atomic(capture((qchar | '/' | '?').+)) ~> URI_QueryVariable }
+  def queryValue = rule { atomic(capture((qchar | '/' | '?').*)) ~> URI_QueryValue }
+  def queryToken = rule { atomic(capture((qchar | '/' | '?').+)) ~> URI_QueryToken }
+  def qchar = rule { unreserved | pct_encoded | query_delims | ':' | '@' }
 
   // fragment      = *( pchar / "/" / "?" )
-  def fragment = rule { capture((pchar | '/' | '?').*) ~> URI_Fragment }
+  def fragment = rule { atomic(capture((pchar | '/' | '?').*)) ~> URI_Fragment }
 
   // pct-encoded    = "%" HEXDIG HEXDIG
   def pct_encoded = rule { '%' ~ HexDigit ~ HexDigit }

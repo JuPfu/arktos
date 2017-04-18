@@ -1,3 +1,19 @@
+/*
+* Copyright (C) 2014-2017 Juergen Pfundt
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package org.arktos
 
 import org.arktos.URI._
@@ -16,7 +32,7 @@ trait URIBuilder {
                 uri("user") + (if (uri.contains("password")) { ":" + uri("password") } else "") + "@"
               } else ""
             }) +
-            encoder.encode(uri("host").toString, notEncoded)
+            encoder.encode(uri("host").toString)
         } else {
           if (uri.contains("ipv4address")) uri("ipv4address")
           else if (uri.contains("ipv6address")) { "[" + uri("ipv6address") + "]" }
@@ -24,7 +40,7 @@ trait URIBuilder {
           else if (uri.contains("ipvfuture")) { "[v" + uri("ipvfuture") + "]" }
           else if (uri.contains("ipvfuturelinklocal")) { "[v1" + uri("ipvfuturelinklocal") + "]" }
           else if (uri.contains("hostname")) {
-            encoder.encode(uri("hostname").toString, notEncoded) +
+            encoder.encode(uri("hostname").toString) +
               (if (uri.contains("port")) { ":" + uri("port") } else "")
           } else ""
         }

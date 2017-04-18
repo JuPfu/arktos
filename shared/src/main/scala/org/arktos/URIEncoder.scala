@@ -79,9 +79,8 @@ class URIEncoder {
 
     def writeHexEncodedCharPart(b: Byte) = {
       import URIEncoder.hexmap
-
       bos.write('%')
-      bos.write(hexmap(b >>> 4))
+      bos.write(hexmap((b >> 4) & 0x0F))
       bos.write(hexmap(b & 0x0F))
     }
 
@@ -91,6 +90,7 @@ class URIEncoder {
         writeHexEncodedCharPart(iterator.next)
         writeHexRepresentationOfMultiByteChar(byte, count + 1)
       }
+    }
 
     while (iterator.hasNext) {
       val byte = iterator.next
