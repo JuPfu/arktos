@@ -7,7 +7,7 @@ import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 
 val commonSettings = Seq(
   version := "0.3.0",
-  scalaVersion := "2.12.1",
+  scalaVersion := "2.12.2",
   name := "arktos",
   organization := "com.github.jupfu",
   homepage := Some(new URL("http://github.com/JuPfu/arktos")),
@@ -39,7 +39,6 @@ val formattingSettings = scalariformSettings ++ Seq(
     .setPreference(AlignParameters, true)
     .setPreference(AlignSingleLineCaseStatements, true)
     .setPreference(DoubleIndentClassDeclaration, true))
-
 
 scalatex.SbtPlugin.projectSettings
 
@@ -100,13 +99,6 @@ lazy val root = project.in(file("."))
   .enablePlugins(ScalaJSPlugin)
   .aggregate(arktosJVM, arktosJS)
   .settings(commonSettings:_*)
-
-/*
-lazy val arktos = project.in(file("."))
-  .settings(formattingSettings: _*)
-  .settings(commonSettings: _*)
-  .settings(libraryDependencies ++= Seq(parboiled2, scopt, scalaTest))
-  */
 
 /////////////////////// PUBLISH /////////////////////////
 

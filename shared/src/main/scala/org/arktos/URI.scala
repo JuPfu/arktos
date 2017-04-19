@@ -38,7 +38,6 @@ object URI {
   }
 
   implicit class MapExtender(val m: URIType) extends AnyVal {
-
     def getParamsAsList(default: ParamsListType = List.empty) = {
       m.getOrElse("params", default).asInstanceOf[List[(String, String)]]
     }
@@ -49,7 +48,6 @@ object URI {
     }
 
     def setParams(p: Map[String, List[String]]) = {
-      val r: ListBuffer[(String, String)] = ListBuffer()
       @tailrec
       def kFactor(k: String)(l: List[String], r: ListBuffer[(String, String)]): ListBuffer[(String, String)] = l match {
         case x :: xs ⇒ kFactor(k)(xs, r :+ ((k, x)))
@@ -68,7 +66,6 @@ object URI {
 
   implicit class ParamsMapExtender(val m: ParamsMapType) extends AnyVal {
     def toParamsList = {
-      val r: ListBuffer[(String, String)] = ListBuffer()
       @tailrec
       def kFactor(k: String)(l: List[String], r: ListBuffer[(String, String)]): ListBuffer[(String, String)] = l match {
         case x :: xs ⇒ kFactor(k)(xs, r :+ ((k, x)))
