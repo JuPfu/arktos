@@ -21,8 +21,8 @@ import scala.collection.mutable.ListBuffer
 
 object URI {
   type URIType = Map[String, Any]
-  type ParamsListType = List[(String, String)]
-  type ParamsMapType = Map[String, List[String]]
+  type ParamsListType = List[(String, Option[String])]
+  type ParamsMapType = Map[String, List[Option[String]]]
 
   val encoder = new URIEncoder()
 
@@ -38,40 +38,41 @@ object URI {
   }
 
   implicit class MapExtender(val m: URIType) extends AnyVal {
-    def getParamsAsList(default: ParamsListType = List.empty) = {
-      m.getOrElse("params", default).asInstanceOf[List[(String, String)]]
+    def getParamsAsList(default: ParamsListType = List.empty:ParamsListType): ParamsListType = {
+      m.getOrElse("params", default).asInstanceOf[ParamsListType]
     }
 
-    def getParamsAsMap(default: Map[String, List[String]] = Map.empty) = {
-      if (m.contains("params")) m("params").asInstanceOf[List[(String, String)]].groupBy(_._1).collect { case (x, ys) ⇒ (x, ys.foldLeft(List.empty: List[String])((k, v) ⇒ k :+ v._2)) }
+    def getParamsAsMap(default: Map[String, List[Option[String]]] = Map.empty) = {
+      if (m.contains("params")) m("params").asInstanceOf[List[(String, Option[String])]].groupBy(_._1).collect { case (x, ys) ⇒ (x, ys.foldLeft(List.empty: List[Option[String]])((k, v) ⇒ k :+ v._2)) }
       else default
     }
 
-    def setParams(p: Map[String, List[String]]) = {
+    def setParams(p: Map[String, List[Option[String]]]) = {
       @tailrec
-      def kFactor(k: String)(l: List[String], r: ListBuffer[(String, String)]): ListBuffer[(String, String)] = l match {
+      def kFactor(k: String)(l: List[Option[String]], r: ListBuffer[(String, Option[String])]): ListBuffer[(String, Option[String])] = l match {
         case x :: xs ⇒ kFactor(k)(xs, r :+ ((k, x)))
         case default ⇒ r
       }
 
-      m.updated("params", p.foldLeft(ListBuffer.empty: ListBuffer[(String, String)])((x, y) ⇒ x ++ kFactor(y._1)(y._2, ListBuffer()))).toList
+      m.updated("params", p.foldLeft(ListBuffer.empty: ListBuffer[(String, Option[String])])((x, y) ⇒ x ++ kFactor(y._1)(y._2, ListBuffer()))).toList
     }
   }
 
   implicit class ParamsListExtender(val l: ParamsListType) extends AnyVal {
-    def toParamsMap = {
-      l.groupBy(_._1).collect { case (x, ys) ⇒ (x, ys.foldLeft(List.empty: List[String])((k, v) ⇒ k :+ v._2)) }
+    def toParamsMap: Map[String,List[Option[String]]] = {
+      l.groupBy(_._1).collect { case (x, ys) ⇒ (x, ys.foldLeft(List.empty: List[Option[String]])((k, v) ⇒ k :+ v._2))
+      }
     }
   }
 
   implicit class ParamsMapExtender(val m: ParamsMapType) extends AnyVal {
-    def toParamsList = {
+    def toParamsList: List[(String, Option[String])] = {
       @tailrec
-      def kFactor(k: String)(l: List[String], r: ListBuffer[(String, String)]): ListBuffer[(String, String)] = l match {
+      def kFactor(k: String)(l: List[Option[String]], r: ListBuffer[(String, Option[String])]): ListBuffer[(String, Option[String])] = l match {
         case x :: xs ⇒ kFactor(k)(xs, r :+ ((k, x)))
         case default ⇒ r
       }
-      m.foldLeft(ListBuffer.empty: ListBuffer[(String, String)])((x, y) ⇒ x ++ kFactor(y._1)(y._2, ListBuffer())).toList
+      m.foldLeft(ListBuffer.empty: ListBuffer[(String, Option[String])])((x, y) ⇒ x ++ kFactor(y._1)(y._2, ListBuffer())).toList
     }
   }
 }

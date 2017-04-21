@@ -230,13 +230,22 @@ class evalURI {
         URIMap(Map("ipv6addressz" → (ipv6Address + "%" + zoneid)) + "zoneid" → zoneid)
       case URI_IPv4Address(address) ⇒ URIString(address)
       case URI_Query(rule) ⇒
-        val params = traverseParameterList(rule, new ListBuffer[(String, String)])
-        val decoded_params = params.map((x) ⇒ (uridecoder.decode(x._1), if (x._2 != null) uridecoder.decode(x._2) else x._2))
+        val params = traverseParameterList(rule, new ListBuffer[(String, Option[String])])
+        val decoded_params = params.map {
+          case (k, Some(v)) ⇒ (uridecoder.decode(k), Some(uridecoder.decode(v)))
+          case (k, None)    ⇒ (uridecoder.decode(k), None)
+        }
         URIMap(
           Map("params" → decoded_params) +
             "raw_params" → params +
-            "query" → (params.map((x) ⇒ uridecoder.decode(x._1) + (if (x._2 != null) "=" + uridecoder.decode(x._2) else "")).mkString("&")) +
-            "raw_query" → (params.map((x) ⇒ x._1 + (if (x._2 != null) "=" + x._2 else "")).mkString("&"))
+            "query" → (params.map {
+              case (k, Some(v)) ⇒ uridecoder.decode(k) + "=" + uridecoder.decode(v)
+              case (k, None)    ⇒ uridecoder.decode(k)
+            }.mkString("&")) +
+            "raw_query" → (params.map {
+              case (k, Some(v)) ⇒ k + "=" + v
+              case (k, None)    ⇒ k
+            }.mkString("&"))
         )
       case URI_QueryParameter(queryVariable, queryValue) ⇒
         ((eval(queryVariable), eval(queryValue)): @unchecked) match {
@@ -257,10 +266,10 @@ class evalURI {
   }
 
   @tailrec
-  private def traverseParameterList(l: Seq[URIAST], params: ListBuffer[(String, String)]): List[(String, String)] = l match {
+  private def traverseParameterList(l: Seq[URIAST], params: ListBuffer[(String, Option[String])]): List[(String, Option[String])] = l match {
     case x +: xs ⇒ (eval(x): @unchecked) match {
-      case URITuple((k, v)) ⇒ traverseParameterList(xs, params += ((k, v)))
-      case URIString(t)     ⇒ traverseParameterList(xs, params += ((t, "")))
+      case URITuple((k, v)) ⇒ traverseParameterList(xs, params += ((k, Some(v))))
+      case URIString(t)     ⇒ traverseParameterList(xs, params += ((t, None)))
     }
     case Nil ⇒ params.toList
   }
