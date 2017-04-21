@@ -37,6 +37,11 @@ object URI {
     builder(uri)
   }
 
+  def cmpOption(l: (String,Option[String]), r: (String, Option[String]))(implicit ord:Ordering[(String,Option[String])]) = {
+    import ord._
+    l < r
+  }
+
   implicit class MapExtender(val m: URIType) extends AnyVal {
     def getParamsAsList(default: ParamsListType = List.empty:ParamsListType): ParamsListType = {
       m.getOrElse("params", default).asInstanceOf[ParamsListType]
