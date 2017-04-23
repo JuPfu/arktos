@@ -37,13 +37,13 @@ object URI {
     builder(uri)
   }
 
-  def cmpOption(l: (String,Option[String]), r: (String, Option[String]))(implicit ord:Ordering[(String,Option[String])]) = {
+  def cmpOption(l: (String, Option[String]), r: (String, Option[String]))(implicit ord: Ordering[(String, Option[String])]) = {
     import ord._
     l < r
   }
 
   implicit class MapExtender(val m: URIType) extends AnyVal {
-    def getParamsAsList(default: ParamsListType = List.empty:ParamsListType): ParamsListType = {
+    def getParamsAsList(default: ParamsListType = List.empty: ParamsListType): ParamsListType = {
       m.getOrElse("params", default).asInstanceOf[ParamsListType]
     }
 
@@ -64,8 +64,9 @@ object URI {
   }
 
   implicit class ParamsListExtender(val l: ParamsListType) extends AnyVal {
-    def toParamsMap: Map[String,List[Option[String]]] = {
-      l.groupBy(_._1).collect { case (x, ys) ⇒ (x, ys.foldLeft(List.empty: List[Option[String]])((k, v) ⇒ k :+ v._2))
+    def toParamsMap: Map[String, List[Option[String]]] = {
+      l.groupBy(_._1).collect {
+        case (x, ys) ⇒ (x, ys.foldLeft(List.empty: List[Option[String]])((k, v) ⇒ k :+ v._2))
       }
     }
   }
@@ -80,5 +81,29 @@ object URI {
       m.foldLeft(ListBuffer.empty: ListBuffer[(String, Option[String])])((x, y) ⇒ x ++ kFactor(y._1)(y._2, ListBuffer())).toList
     }
   }
+
+  val defaultPortMap = Map(
+    "ftp" → "20",
+    "ssh" → "22",
+    "telnet" → "23",
+    "smtp" → "25",
+    "dns" → "53",
+    "tftp" → "69",
+    "gopher" → "70",
+    "finger" → "79",
+    "http" → "80",
+    "sftp" → "115",
+    "imap" → "143",
+    "snmp" → "161",
+    "irc" → "194",
+    "ldap" → "389",
+    "https" → "443",
+    "rtsp" → "554",
+    "nntp" → "563",
+    "ipp" → "631",
+    "ldaps" → "636",
+    "iris" → "702",
+    "ircs" → "994"
+  )
 }
 

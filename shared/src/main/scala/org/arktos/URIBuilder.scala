@@ -21,9 +21,9 @@ import org.arktos.URI._
 trait URIBuilder {
   def builder(uri: URIType): String = {
     (if (uri.contains("scheme")) (uri("scheme") + ":") else (if (uri.contains("protocol")) uri("protocol") + ":" else "")) +
-      (if (uri.contains("authority")) {
+      ( /*if (uri.contains("authority")) {
         "//" + uri("authority")
-      } else {
+      } else {*/
         if (uri.contains("host")) {
           "//" +
             (if (uri.contains("userinfo")) { uri("userinfo") + "@" }
@@ -32,7 +32,12 @@ trait URIBuilder {
                 uri("user") + (if (uri.contains("password")) { ":" + uri("password") } else "") + "@"
               } else ""
             }) +
-            encoder.encode(uri("host").toString)
+            (if (uri.contains("hostname")) {
+              uri("hostname") +
+                (if (uri.contains("port")) ":" + uri("port") else "")
+            } else {
+              encoder.encode(uri("host").toString)
+            })
         } else {
           if (uri.contains("ipv4address")) uri("ipv4address")
           else if (uri.contains("ipv6address")) { "[" + uri("ipv6address") + "]" }
@@ -44,10 +49,10 @@ trait URIBuilder {
               (if (uri.contains("port")) { ":" + uri("port") } else "")
           } else ""
         }
-      }) +
-      encoder.encode(uri.getOrElse("path", "").toString) +
-      (if (uri.contains("params")) ("?" + (uri.getParamsAsList().map({ case (k, None) ⇒ k; case (k, Some(v)) ⇒ encoder.encode(k, notEncoded -- '=', true) + "=" + encoder.encode(v, notEncoded -- '=', true) }).mkString("&"))) else "") +
-      (if (uri.contains("fragment")) { "#" + encoder.encode(uri("fragment").toString, notEncoded ++ ' ') } else "")
+      /*}*/ ) +
+        encoder.encode(uri.getOrElse("path", "").toString) +
+        (if (uri.contains("params")) ("?" + (uri.getParamsAsList().map({ case (k, None) ⇒ k; case (k, Some(v)) ⇒ encoder.encode(k, notEncoded -- '=', true) + "=" + encoder.encode(v, notEncoded -- '=', true) }).mkString("&"))) else "") +
+        (if (uri.contains("fragment")) { "#" + encoder.encode(uri("fragment").toString, notEncoded ++ ' ') } else "")
   }
 }
 

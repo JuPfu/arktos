@@ -106,14 +106,28 @@ class URIEncoder {
           else writeHexEncodedCharPart(byte)
         }
       } else {
-        /* write first byte of a multi-byte character encoded into two hexadecimal characters
+        if ((byte & 0xC0) == 0x80) {
+          val lowerByte = iterator.next
+          if (predicateMasked((byte.toInt << 8 & byte.toInt).toChar)) {
+            bos.write(byte)
+            bos.write(lowerByte)
+          } else {
+            /* write single byte character encoded into two hexadecimal characters
+             * (first nibble and second nibble) to ByteArrayOutputStream
+             */
+            writeHexEncodedCharPart(byte)
+            writeHexEncodedCharPart(lowerByte)
+          }
+        } else {
+          /* write first byte of a multi-byte character encoded into two hexadecimal characters
          * (first nibble and second nibble) to ByteArrayOutputStream
          */
-        writeHexEncodedCharPart(byte)
-        /* recursively write all remaining bytes of a multi-byte character
+          writeHexEncodedCharPart(byte)
+          /* recursively write all remaining bytes of a multi-byte character
          * each byte encoded into two hexadecimal characters
          * (first nibble and second nibble) to ByteArrayOutputStream */
-        writeHexRepresentationOfMultiByteChar(byte, 1)
+          writeHexRepresentationOfMultiByteChar(byte, 1)
+        }
       }
     }
     bos.toString(charset)
