@@ -25,6 +25,11 @@ object URI {
   type ParamsMapType = Map[String, List[Option[String]]]
 
   val encoder = new URIEncoder()
+  val userEncoder = encoder.encode(notEncoded, false, "UTF-8") _
+  val hostnameEncoder = encoder.encode(notEncoded, false, "UTF-8") _
+  val pathEncoder = encoder.encode(notEncoded, false, "UTF-8") _
+  val queryEncoder = encoder.encode(notEncoded -- ' ', true, "UTF-8") _
+  val fragmentEncoder = encoder.encode(notEncoded, false, "UTF-8") _
 
   def get = Map.empty: URIType
 

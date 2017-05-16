@@ -69,9 +69,9 @@ object URIEncoder {
 
 class URIEncoder {
 
-  def encode(s: String, predicate: CharPredicate = notEncoded, blankAsPlus: Boolean = false, charset: String = "UTF-8"): String = {
+  def encode(predicate: CharPredicate = notEncoded, blankAsPlus: Boolean = false, charset: String = "UTF-8")(s: String): String = {
 
-    val predicateMasked = predicate.asMaskBased
+    val predicateMasked = predicate //  .asMaskBased
 
     val iterator: Iterator[Byte] = s.getBytes("UTF-8").iterator
 
@@ -79,6 +79,9 @@ class URIEncoder {
 
     def writeHexEncodedCharPart(b: Byte) = {
       import URIEncoder.hexmap
+      /* write single byte character encoded into two hexadecimal characters
+       * (first nibble and second nibble) to ByteArrayOutputStream
+       */
       bos.write('%')
       bos.write(hexmap((b >> 4) & 0x0F))
       bos.write(hexmap(b & 0x0F))
@@ -86,6 +89,9 @@ class URIEncoder {
 
     @tailrec
     def writeHexRepresentationOfMultiByteChar(byte: Byte, count: Int): Unit = {
+      /* recursively write all remaining bytes of a multi-byte character
+       * each byte encoded into two hexadecimal characters
+       * (first nibble and second nibble) to ByteArrayOutputStream */
       if (((byte << count) & 0x80) != 0) {
         writeHexEncodedCharPart(iterator.next)
         writeHexRepresentationOfMultiByteChar(byte, count + 1)
@@ -97,37 +103,22 @@ class URIEncoder {
 
       if ((byte & 0x80) == 0) {
         if (predicateMasked(byte.toChar)) {
-          bos.write(byte)
+          bos.write(byte) // no encoding
         } else {
-          /* write single byte character encoded into two hexadecimal characters
-           * (first nibble and second nibble) to ByteArrayOutputStream
-           */
-          if (blankAsPlus && byte == ' ') writeHexEncodedCharPart('+')
-          else writeHexEncodedCharPart(byte)
+          if (blankAsPlus && byte == ' ') writeHexEncodedCharPart('+') else writeHexEncodedCharPart(byte)
         }
-      } else {
-        if ((byte & 0xC0) == 0x80) {
-          val lowerByte = iterator.next
-          if (predicateMasked((byte.toInt << 8 & byte.toInt).toChar)) {
-            bos.write(byte)
-            bos.write(lowerByte)
-          } else {
-            /* write single byte character encoded into two hexadecimal characters
-             * (first nibble and second nibble) to ByteArrayOutputStream
-             */
-            writeHexEncodedCharPart(byte)
-            writeHexEncodedCharPart(lowerByte)
-          }
+      } else if ((byte & 0xE0) == 0xC0) {
+        val lowerByte = iterator.next
+        if (predicateMasked(((byte.toInt << 8 & byte.toInt) & 0xFFFF).toChar)) {
+          bos.write(byte) // no encodung
+          bos.write(lowerByte) // no encoding
         } else {
-          /* write first byte of a multi-byte character encoded into two hexadecimal characters
-         * (first nibble and second nibble) to ByteArrayOutputStream
-         */
           writeHexEncodedCharPart(byte)
-          /* recursively write all remaining bytes of a multi-byte character
-         * each byte encoded into two hexadecimal characters
-         * (first nibble and second nibble) to ByteArrayOutputStream */
-          writeHexRepresentationOfMultiByteChar(byte, 1)
+          writeHexEncodedCharPart(lowerByte)
         }
+      }  else {
+        writeHexEncodedCharPart(byte)
+        writeHexRepresentationOfMultiByteChar(byte, 1)
       }
     }
     bos.toString(charset)

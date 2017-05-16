@@ -29,14 +29,14 @@ trait URIBuilder {
             (if (uri.contains("userinfo")) { uri("userinfo") + "@" }
             else {
               if (uri.contains("user")) {
-                uri("user") + (if (uri.contains("password")) { ":" + uri("password") } else "") + "@"
+                userEncoder(uri("user").toString) + (if (uri.contains("password")) { ":" + userEncoder(uri("password").toString) } else "") + "@"
               } else ""
             }) +
             (if (uri.contains("hostname")) {
-              uri("hostname") +
+              hostnameEncoder(uri("hostname").toString) +
                 (if (uri.contains("port")) ":" + uri("port") else "")
             } else {
-              encoder.encode(uri("host").toString)
+              pathEncoder(uri("host").toString)
             })
         } else {
           if (uri.contains("ipv4address")) uri("ipv4address")
@@ -45,14 +45,14 @@ trait URIBuilder {
           else if (uri.contains("ipvfuture")) { "[v" + uri("ipvfuture") + "]" }
           else if (uri.contains("ipvfuturelinklocal")) { "[v1" + uri("ipvfuturelinklocal") + "]" }
           else if (uri.contains("hostname")) {
-            encoder.encode(uri("hostname").toString) +
+            hostnameEncoder(uri("hostname").toString) +
               (if (uri.contains("port")) { ":" + uri("port") } else "")
           } else ""
         }
       /*}*/ ) +
-        encoder.encode(uri.getOrElse("path", "").toString) +
-        (if (uri.contains("params")) ("?" + (uri.getParamsAsList().map({ case (k, None) ⇒ k; case (k, Some(v)) ⇒ encoder.encode(k, notEncoded -- '=', true) + "=" + encoder.encode(v, notEncoded -- '=', true) }).mkString("&"))) else "") +
-        (if (uri.contains("fragment")) { "#" + encoder.encode(uri("fragment").toString, notEncoded ++ ' ') } else "")
+        pathEncoder(uri.getOrElse("path", "").toString) +
+        (if (uri.contains("params")) ("?" + (uri.getParamsAsList().map({ case (k, None) ⇒ k; case (k, Some(v)) ⇒ queryEncoder(k) + "=" + queryEncoder(v) }).mkString("&"))) else "") +
+        (if (uri.contains("fragment")) { "#" + fragmentEncoder(uri("fragment").toString) } else "")
   }
 }
 
